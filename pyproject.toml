@@ -22,6 +22,12 @@ classifiers = [
 dependencies = [
     "click>=8.1.0",
     "pydantic>=2.0.0",
+    "python-dotenv>=1.0.0",
+    "anthropic>=0.18.0",
+    "openai>=1.0.0",
+    "google-generativeai>=0.3.0",
+    "google-auth>=2.0.0",
+    "tiktoken>=0.5.0",
 ]
 
 [project.optional-dependencies]
@@ -78,6 +84,14 @@ strict_equality = true
 [[tool.mypy.overrides]]
 module = "tests.*"
 disallow_untyped_defs = false
+
+[[tool.mypy.overrides]]
+module = [
+    "google.generativeai.*",
+    "google.auth.*",
+    "dotenv.*",
+]
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

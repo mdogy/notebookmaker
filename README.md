@@ -23,6 +23,67 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -e ".[dev]"
 ```
 
+### API Configuration
+
+NotebookMaker uses LLM APIs to analyze lecture content and generate notebooks. You need to configure at least one LLM provider.
+
+#### Option 1: Environment Variables (Recommended)
+
+```bash
+# For Anthropic Claude (recommended)
+export ANTHROPIC_API_KEY="sk-ant-..."
+
+# For Google Gemini
+export GOOGLE_API_KEY="..."
+
+# For OpenAI
+export OPENAI_API_KEY="sk-..."
+
+# For OpenRouter
+export OPENROUTER_API_KEY="sk-or-..."
+```
+
+Add these to your shell profile (`~/.bashrc`, `~/.zshrc`, etc.) to make them permanent.
+
+#### Option 2: .env File
+
+Create a `.env` file in the project root:
+
+```bash
+# Copy the example file
+cp .env.example .env
+
+# Edit .env and add your API keys
+# NEVER commit this file to git (it's already in .gitignore)
+```
+
+#### Option 3: Google Cloud Application Default Credentials
+
+If you have Google Cloud CLI installed:
+
+```bash
+gcloud auth application-default login
+```
+
+This allows NotebookMaker to use your Google Cloud credentials for Gemini API access.
+
+#### Getting API Keys
+
+- **Anthropic Claude**: https://console.anthropic.com/
+- **Google Gemini**: https://makersuite.google.com/app/apikey
+- **OpenAI**: https://platform.openai.com/api-keys
+- **OpenRouter**: https://openrouter.ai/keys
+
+#### Testing Your API Setup
+
+```bash
+# Test a specific provider
+python test_llm_providers.py anthropic
+
+# Test all configured providers
+python test_llm_providers.py
+```
+
 ## Usage
 
 ```bash
@@ -45,17 +106,25 @@ notebookmaker lecture.pdf -o outputs
 
 ```
 notebookmaker/
-├── src/notebookmaker/    # Main package
-│   ├── __init__.py       # Package initialization
-│   ├── cli.py            # Command-line interface
-│   └── utils.py          # Utility functions
-├── tests/                # Test suite
-├── prompts/              # Prompt templates
-├── examples/             # Example lecture files
-├── outputs/              # Generated notebooks (gitignored)
-├── pyproject.toml        # Package configuration
-├── CLAUDE.md             # Development guidelines
-└── README.md             # This file
+├── src/notebookmaker/       # Main package
+│   ├── __init__.py          # Package initialization
+│   ├── cli.py               # Command-line interface
+│   ├── utils.py             # Utility functions
+│   └── llm/                 # LLM integration layer
+│       ├── __init__.py      # LLM module exports
+│       ├── models.py        # Pydantic models
+│       ├── credentials.py   # Secure credential discovery
+│       └── providers.py     # LLM provider implementations
+├── tests/                   # Test suite
+├── prompts/                 # Prompt templates
+├── examples/                # Example lecture files
+├── outputs/                 # Generated notebooks (gitignored)
+├── .env.example             # API key template (commit this)
+├── .env                     # Your API keys (NEVER commit)
+├── test_llm_providers.py    # LLM integration test script
+├── pyproject.toml           # Package configuration
+├── CLAUDE.md                # Development guidelines
+└── README.md                # This file
 ```
 
 ## Development

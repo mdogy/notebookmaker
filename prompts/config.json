@@ -1,0 +1,11 @@
+{ "courseLevel": "undergraduate",          // "undergraduate" or "masters" "studentBackground": { "hasPriorProgramming": false, "hasPriorCalculus": true }, "courseInfo": { "courseId": "ENGR 10200", "courseName": "A Data Science and Statistical Approach to Programming", "institution": "The City College of New York" }, "lectureInfo": { "lectureId": "L18", "lectureTitle": "Recursion, Linear Search, and Big-O", "lectureDurationMinutes": 50, "notebookBaseName": "L19-Algorithms-Sorting", "lectureTopics": [
+"Motivation: Real-world search applications and interview relevance",
+"Linear search algorithm and O(n) complexity analysis",
+"Incremental coding demo: Building linear search function",
+"Binary search on sorted data and O(log n) complexity",
+"Bubble sort algorithm with step-by-step visualization",
+"Selection sort algorithm and comparison approach",
+"Merge sort concept and recursive divide-and-conquer strategy",
+"Brief preview: Object-oriented programming for simulations" ] }, "sourceFiles": { "slides": [ "L19-Algorithms-Sorting.pdf" ], "readings": [
+"https://runestone.academy/ns/books/published/thinkcspy/index.html",
+"https://datascienceandengineering.github.io/cuny_ds_book_for_engr102/intro.html", "ScientificPythonLectures-simple.pdf", "Python Data Science Handbook Essential Tools for Working with Data, 2nd Edition (Jake VanderPlas).pdf", "ElementsOfDataScience_Downey.pdf" ], "courseSchedule": "class_calendarEngrF25.md", "syllabus": "ENGR10200_Syllabus_F25.md" }, "outputFiles": { "instructorNotebook": L19-Algorithms-Sortingr.ipynb", "studentNotebook": "L19-Algorithms-Sorting.ipynb", "builderScript": "build_L19-Algorithms-Sorting.py" } }

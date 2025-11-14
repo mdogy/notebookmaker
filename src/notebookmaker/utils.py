@@ -1,7 +1,6 @@
 """Utility functions for processing lectures and generating notebooks."""
 
 from pathlib import Path
-from typing import Any
 
 
 def process_lecture(input_file: Path, output_dir: Path) -> dict[str, Path]:

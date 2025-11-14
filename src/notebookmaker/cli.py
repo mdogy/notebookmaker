@@ -1,7 +1,6 @@
 """Command-line interface for NotebookMaker."""
 
 from pathlib import Path
-from typing import Annotated
 
 import click
 
