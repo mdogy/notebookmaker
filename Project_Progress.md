@@ -37,18 +37,21 @@ The foundational architecture is complete and functional.
     -   Integration tests for the full two-phase pipeline.
     -   Target: 80%+ code coverage.
 
-2.  **Documentation Updates** (Low Priority) - Partially complete
+2.  **Documentation Updates** (Low Priority) - Not Started
     -   Update `README.md` with new usage instructions for the two-phase CLI.
     -   Document the `LectureAnalysis` JSON format.
     -   Update `AGENTS.md` to reflect the new architecture.
+    -   Review and remove obsolete documentation files (`README_TWO_PHASE.md`, `DESIGN_TWO_PHASE.md`, `CLAUDE.md`).
 
 ### 🎯 **Recommended Next Steps**
 
 With the core two-phase architecture now implemented, the highest priority is to build a comprehensive test suite to ensure reliability and prevent regressions.
 
-1.  **Write Unit Tests**: Create `pytest` tests for the key functions in `analysis.py`, `generation.py`, and `vision.py`.
-2.  **Write Integration Tests**: Build a test that runs the full `process_lecture` pipeline on an example PDF and verifies the outputs (analysis JSON and notebooks).
-3.  **Update Documentation**: Ensure the `README.md` and other documentation files are updated to reflect the new CLI commands and workflow.
+1.  **Update Documentation**: Ensure the `README.md` and other documentation files are updated to reflect the new CLI commands and workflow.
+2.  **Write Unit Tests**: Create `pytest` tests for the key functions in `analysis.py`, `generation.py`, and `vision.py`.
+3.  **Write Integration Tests**: Build a test that runs the full `process_lecture` pipeline on an example PDF and verifies the outputs (analysis JSON and notebooks).
+4.  **Fix Mypy Error**: Resolve the remaining mypy error in `src/notebookmaker/llm/providers.py`.
+
 
 ---
 
@@ -56,15 +59,48 @@ With the core two-phase architecture now implemented, the highest priority is to
 
 -   **Lines of Code**: ~2,000 (src/)
 -   **Test Coverage**: Not yet measured
--   **Type Coverage**: 100% (mypy strict mode)
--   **Linting**: 100% (ruff passing)
+-   **Type Coverage**: 99% (1 remaining mypy error)
+-   **Linting**: 100% (ruff passing in `src/`)
 -   **Dependencies**: 10 core, 5 dev
 
 ---
 
 ## Appendix: Project History
 
-### Evolution from `[previous]` → `[current]` (2025-11-14)
+### Evolution from `421bcc4` → `[current]` (2025-11-14)
+
+**From**: Functional two-phase pipeline with scattered imports and minor linting issues.
+**To**: Improved instructor notebook generation with consolidated imports and cleaner code.
+
+**What Changed Between Commits**:
+
+This commit introduces a feature enhancement to the notebook generation process and addresses several code quality issues identified during a full codebase review.
+
+**Key Changes**:
+
+1.  **Import Consolidation (`generation.py`)**:
+    -   A new `_consolidate_imports` function was added to programmatically gather all Python `import` statements from the generated instructor notebook.
+    -   These imports are now moved into a single, sorted code cell at the top of the notebook, improving readability and adhering to PEP 8 best practices.
+    -   The original import statements are removed from their individual cells.
+
+2.  **Code Refactoring and Cleanup**:
+    -   The `_parse_llm_response_to_notebook` function was moved from `utils.py` to `generation.py`, as it is only used in the generation phase.
+    -   Dead code from the previous single-phase architecture (e.g., `extract_pdf_content`, `generate_notebook`) was removed from `utils.py`, making the module a cleaner, more focused orchestrator.
+
+3.  **Linting and Type Hint Fixes**:
+    -   Addressed multiple `ruff` and `mypy` issues across the codebase (`analysis.py`, `generation.py`, `llm/credentials.py`, `utils.py`).
+    -   Fixed line-length errors (E501), simplified `if` statements (SIM102), and removed unnecessary `list()` calls (C414).
+    -   Resolved mypy errors by adding explicit `cast` calls for configuration values and adding `type: ignore` comments for untyped library calls (`nbformat`), as per project guidelines.
+
+**Why This Evolution Matters**:
+
+-   **Improved Code Quality**: The instructor notebooks are now cleaner and more professional.
+-   **Better Maintainability**: The codebase is easier to navigate and understand after removing dead code and fixing linting/typing issues.
+-   **Adherence to Standards**: The changes bring the code into closer alignment with the strict quality standards defined in `GEMINI.md` and `AGENTS.md`.
+
+---
+
+### Evolution from `[previous]` → `421bcc4` (2025-11-14)
 
 **From**: Single-phase, text-only pipeline
 **To**: Two-phase, vision-enabled analysis-generation architecture
@@ -162,139 +198,27 @@ This commit transforms NotebookMaker from "infrastructure with failing output" t
 - **Standard format**: Percent format is already used by major IDEs
 - **Token efficiency**: Less overhead than JSON structure
 - **Human readable**: Intermediate format can be inspected/debugged
-
-**Testing Results**:
-
-Tested on `examples/L12-HypothesisTesting.pdf` (42 pages, 5,903 characters):
-- **Instructor notebook**: 14 cells generated successfully (12KB file)
-- **Student notebook**: 13 cells generated successfully (14KB file)
-- Both notebooks contain proper markdown explanations and code examples
-- Process completed in ~45 seconds using Google Gemini
-
-**Design Decisions**:
-
-1. **Percent format over JSON**: Based on analysis of options (A-F), chose established IDE format that LLMs handle naturally
-2. **Single LLM call per notebook**: Rather than chunking, let LLM see full context
-3. **Auto-incrementing filenames**: Prevents accidental overwrites while allowing multiple runs
-4. **Provider/model CLI options**: Gives users flexibility without editing config files
-
-**Migration Impact**:
-
-For users: The pipeline now works! Generated notebooks are production-ready.
-
-For developers: The percent-format parser in `_parse_llm_response_to_notebook()` is simpler and more maintainable than JSON parsing. Future prompt improvements won't fight JSON escaping issues.
-
 ---
-
 ### Evolution from `01e96de` (previous) → `01e96de` (2025-11-14)
 
 **From**: Hardcoded LLM prompts in code
 **To**: Fragment-based prompt template system
-
-**What Changed Between Commits**:
-
-The previous implementation had notebook generation prompts hardcoded as f-strings directly in the `_create_notebook_prompt()` function. This commit refactors the entire prompt system to use a modular, fragment-based architecture.
-
-**Key Additions**:
-
-1. **Prompt Fragments** (`prompts/fragments/`):
-   - `role.md` - Defines the instructor persona for the LLM
-   - `notebook_structure.md` - Specifies the Markdown → Code cell pattern
-   - `student_version.md` - Guidelines for creating incomplete code with `....` markers
-   - `instructor_version.md` - Requirements for complete, runnable code
-   - `tone.md` - Conversational style guidelines
-   - `output_format.md` - JSON response format specification
-
-2. **Template Files** (`prompts/`):
-   - `student_notebook_template.md` - Assembles student-specific fragments
-   - `instructor_notebook_template.md` - Assembles instructor-specific fragments
-   - Both use `{placeholder}` syntax for fragment injection
-
-3. **Prompt Loading System** (`utils.py`):
-   - `_load_prompt_fragment()` - Loads and processes individual fragment files
-   - `_create_notebook_prompt()` - Completely refactored to:
-     * Load the appropriate template based on notebook_type
-     * Load all required fragments
-     * Replace placeholders with fragment content
-     * Return assembled prompt
-
-4. **Type Safety Improvements**:
-   - Added TYPE_CHECKING guard for nbformat import
-   - Runtime validation of provider parameter with cast to Literal type
-   - Added type: ignore comments for untyped nbformat calls
-   - Updated pyproject.toml to ignore missing imports for nbformat, pypdf, pptx, tiktoken
-
-**Why This Evolution Matters**:
-
-This refactoring addresses a critical design flaw identified by the user: prompts should be **editable text files**, not hardcoded strings in Python. The new architecture provides several benefits:
-
-- **Maintainability**: Prompt engineering happens in markdown files, not Python code
-- **Experimentation**: Try different prompt variations without code changes
-- **Reusability**: Fragment composition allows mixing and matching components
-- **Separation of Concerns**: LLM instructions (prompts) are separate from orchestration logic (code)
-- **Version Control**: Prompt changes are tracked independently of code changes
-
 ---
-
 ### Evolution from `b52f945` → `[previous]` (2025-11-14)
 
 **From**: Documentation standards with no content extraction
 **To**: Working PDF and PowerPoint extraction
-
-**What Changed Between Commits**:
-
-The previous commit (`b52f945`) finalized the development guidelines and documentation standards. This commit implements the first major application feature: document content extraction.
-
-**Key Additions**:
-
-1. **Dependencies** (`pyproject.toml`):
-   - Added `pypdf>=4.0.0` for PDF text extraction
-   - Added `python-pptx>=0.6.23` for PowerPoint slide extraction
-   - Added `nbformat>=5.9.0` for Jupyter notebook generation (future use)
-   - All dependencies installed and verified working
-
-2. **PDF Extraction** (`utils.py:extract_pdf_content`):
-   - Implemented complete PDF text extraction using pypdf
-   - Page-by-page extraction with clear page markers (`--- Page N ---`)
-   - Proper error handling (FileNotFoundError, ValueError)
-   - Type-safe with full mypy compliance
-   - Tested on 42-page lecture PDF (5,903 characters extracted)
-
-3. **PowerPoint Extraction** (`utils.py:extract_powerpoint_content`):
-   - Implemented complete PPTX text extraction using python-pptx
-   - Slide-by-slide extraction with slide markers (`--- Slide N ---`)
-   - Extracts all text from shapes on each slide
-   - Same error handling and type safety as PDF extraction
-   - Supports both .ppt and .pptx formats
-
-**Why This Evolution Matters**:
-
-This commit transforms NotebookMaker from "infrastructure only" to "can process lecture materials." The extraction functions are the **foundation of the entire pipeline** - without them, we can't get content to send to the LLM.
-
 ---
-
 ### Evolution from `d39d7bc` → `601f883` (2025-11-14)
 
 **From**: LLM infrastructure with `.env` file support
 **To**: YAML-based configuration in user's home directory
-
-**What Changed Between Commits**:
-
-The previous commit (`d39d7bc`) had implemented a working LLM layer, but it relied on `.env` files in the project directory for API key storage. This commit completely replaced that approach with a more secure and user-friendly YAML configuration system.
-
 ---
-
 ### Evolution from `5076402` → `d39d7bc` (2025-11-14)
 
 **From**: Empty project with configuration files
 **To**: Working LLM integration layer
-
-**What Changed Between Commits**:
-
-The initial commit (`5076402`) set up the project structure, development guidelines, and tooling configuration, but contained no actual application code. This commit added the entire LLM integration layer.
-
 ---
-
 ### Commit: `5076402` - Initial commit: project configuration (2025-11-14)
 
 **What Was Created**:

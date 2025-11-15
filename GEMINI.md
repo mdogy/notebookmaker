@@ -136,3 +136,14 @@ def test_cli_command():
 - `coverage report -m` — Show coverage report
 - `coverage html` — Generate HTML coverage report
 - `cram tests/*.t` — Run integration tests
+
+# Documentation Synchronization
+
+This repository is developed by multiple code agents. To ensure all agents can easily analyze the current project state and adhere to established styles, the following documentation files must be kept in sync:
+
+- `Project_Progress.md`: Tracks the overall project history, status, and next steps.
+- `GEMINI.md`: Provides guidance specific to Gemini when working with this codebase.
+- `CLAUDE.md`: Provides guidance specific to Claude when working with this codebase.
+- `AGENTS.md`: Provides general guidance for all agents.
+
+When making changes to project guidelines, workflow, or status, ensure these files are updated consistently. Do not delete these files.

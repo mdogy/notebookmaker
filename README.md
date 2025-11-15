@@ -1,10 +1,16 @@
 # NotebookMaker
 
-Convert lecture PDFs and PowerPoints into interactive Jupyter notebooks.
+Convert lecture PDFs into interactive Jupyter notebooks using a two-phase, vision-enabled LLM architecture.
 
 ## Overview
 
-NotebookMaker is a command-line tool that processes lecture materials (PDF or PowerPoint files) and generates two Jupyter notebooks for enhanced learning and note-taking.
+NotebookMaker is a command-line tool that processes lecture PDFs and generates two Jupyter notebooks:
+1.  **Instructor Notebook**: Contains complete, runnable code examples extracted from the lecture.
+2.  **Student Notebook**: Contains the same examples but with key code sections removed for students to fill in as exercises.
+
+It uses a sophisticated **two-phase architecture**:
+-   **Phase 1 (Analysis)**: A vision-capable LLM analyzes the PDF to identify logical sections and extract code (from text and images), equations, and key concepts. This produces a structured JSON analysis file.
+-   **Phase 2 (Generation)**: A second LLM uses the structured analysis to generate clean, code-focused notebooks, ensuring higher relevance and quality.
 
 ## Installation
 
@@ -105,21 +111,28 @@ python test_llm_providers.py
 
 ## Usage
 
+The tool operates in two phases. The first time you run it on a PDF, it will perform the analysis phase, which can take some time. The result is saved as a `.analysis.json` file. Subsequent runs will use this cached analysis, making them much faster.
+
 ```bash
-# Basic usage
+# Basic usage (uses Google Gemini for analysis by default)
 notebookmaker path/to/lecture.pdf
 
-# Specify output directory
-notebookmaker path/to/lecture.pptx --output-dir my_notebooks
+# Specify a different provider for analysis
+notebookmaker path/to/lecture.pdf --analysis-provider anthropic
 
-# Short form
-notebookmaker lecture.pdf -o outputs
+# Specify providers for both phases
+notebookmaker path/to/lecture.pdf --analysis-provider google --generation-provider anthropic
+
+# Specify models for each phase
+notebookmaker path/to/lecture.pdf --analysis-model gemini-1.5-pro-latest --generation-model claude-3-5-sonnet-20240620
+
+# Specify output directory and minimum priority for code sections
+notebookmaker lecture.pdf -o my_notebooks --min-priority 7
 ```
 
 ### Supported File Formats
 
 - PDF (`.pdf`)
-- PowerPoint (`.ppt`, `.pptx`)
 
 ## Project Structure
 
@@ -128,10 +141,13 @@ notebookmaker/
 ├── src/notebookmaker/       # Main package
 │   ├── __init__.py          # Package initialization
 │   ├── cli.py               # Command-line interface
-│   ├── utils.py             # Utility functions
+│   ├── utils.py             # Main pipeline orchestrator
+│   ├── analysis.py          # Phase 1: PDF analysis logic
+│   ├── generation.py        # Phase 2: Notebook generation logic
+│   ├── vision.py            # Vision LLM interaction
+│   ├── models.py            # Pydantic data models
 │   └── llm/                 # LLM integration layer
 │       ├── __init__.py      # LLM module exports
-│       ├── models.py        # Pydantic models
 │       ├── credentials.py   # Secure credential discovery
 │       └── providers.py     # LLM provider implementations
 ├── tests/                   # Test suite
@@ -141,7 +157,7 @@ notebookmaker/
 ├── .notebookmaker_config.yaml.example # Config template (commit this)
 ├── test_llm_providers.py              # LLM integration test script
 ├── pyproject.toml                     # Package configuration
-├── CLAUDE.md                          # Development guidelines
+├── GEMINI.md                          # Development guidelines for Gemini
 └── README.md                          # This file
 
 Note: User configuration file (~/.notebookmaker_config.yaml) lives in your home directory, NOT in the project.
