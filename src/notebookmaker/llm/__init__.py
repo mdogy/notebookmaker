@@ -1,6 +1,6 @@
 """LLM integration layer with secure credential management."""
 
-from typing import Literal
+from typing import Any, Literal
 
 from .credentials import CredentialManager
 from .models import LLMConfig, LLMMessage, LLMResponse, LLMUsage, ProviderConfig
@@ -29,6 +29,9 @@ __all__ = [
     "OpenRouterProvider",
     # Credential management
     "CredentialManager",
+    # Configuration helpers
+    "get_llm_config",
+    "get_logging_config",
 ]
 
 
@@ -85,3 +88,25 @@ def get_provider(
         )
 
     return provider_class(api_key=api_key)
+
+
+def get_llm_config() -> dict[str, Any]:
+    """
+    Get LLM configuration from config file.
+
+    Returns:
+        Dictionary with LLM config (provider, model, max_tokens, temperature, etc.)
+        or empty dict if not configured
+    """
+    return CredentialManager.get_llm_config()
+
+
+def get_logging_config() -> dict[str, Any]:
+    """
+    Get logging configuration from config file.
+
+    Returns:
+        Dictionary with logging config (level, log_llm_details)
+        or empty dict if not configured
+    """
+    return CredentialManager.get_logging_config()

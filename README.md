@@ -27,7 +27,36 @@ pip install -e ".[dev]"
 
 NotebookMaker uses LLM APIs to analyze lecture content and generate notebooks. You need to configure at least one LLM provider.
 
-#### Option 1: Environment Variables (Recommended)
+#### Option 1: Configuration File (Recommended)
+
+Create a configuration file in your home directory:
+
+```bash
+# Copy the example configuration file to your home directory
+cp .notebookmaker_config.yaml.example ~/.notebookmaker_config.yaml
+
+# Edit the file and add your API keys
+nano ~/.notebookmaker_config.yaml
+
+# Protect the file (recommended)
+chmod 600 ~/.notebookmaker_config.yaml
+```
+
+The configuration file should look like this:
+
+```yaml
+# Add your API keys (you only need keys for providers you plan to use)
+anthropic_api_key: "sk-ant-your-key-here"
+google_api_key: "your-google-key-here"
+openai_api_key: "sk-your-openai-key-here"
+openrouter_api_key: "sk-or-your-openrouter-key-here"
+```
+
+**Security Note**: NEVER commit `~/.notebookmaker_config.yaml` to version control. Keep this file in your home directory only.
+
+#### Option 2: Environment Variables
+
+If you prefer, you can use environment variables instead:
 
 ```bash
 # For Anthropic Claude (recommended)
@@ -45,21 +74,11 @@ export OPENROUTER_API_KEY="sk-or-..."
 
 Add these to your shell profile (`~/.bashrc`, `~/.zshrc`, etc.) to make them permanent.
 
-#### Option 2: .env File
-
-Create a `.env` file in the project root:
-
-```bash
-# Copy the example file
-cp .env.example .env
-
-# Edit .env and add your API keys
-# NEVER commit this file to git (it's already in .gitignore)
-```
+**Priority**: The configuration file (`~/.notebookmaker_config.yaml`) takes precedence over environment variables.
 
 #### Option 3: Google Cloud Application Default Credentials
 
-If you have Google Cloud CLI installed:
+For Google Gemini, if you have Google Cloud CLI installed:
 
 ```bash
 gcloud auth application-default login
@@ -116,15 +135,16 @@ notebookmaker/
 │       ├── credentials.py   # Secure credential discovery
 │       └── providers.py     # LLM provider implementations
 ├── tests/                   # Test suite
-├── prompts/                 # Prompt templates
-├── examples/                # Example lecture files
-├── outputs/                 # Generated notebooks (gitignored)
-├── .env.example             # API key template (commit this)
-├── .env                     # Your API keys (NEVER commit)
-├── test_llm_providers.py    # LLM integration test script
-├── pyproject.toml           # Package configuration
-├── CLAUDE.md                # Development guidelines
-└── README.md                # This file
+├── prompts/                           # Prompt templates
+├── examples/                          # Example lecture files
+├── outputs/                           # Generated notebooks (gitignored)
+├── .notebookmaker_config.yaml.example # Config template (commit this)
+├── test_llm_providers.py              # LLM integration test script
+├── pyproject.toml                     # Package configuration
+├── CLAUDE.md                          # Development guidelines
+└── README.md                          # This file
+
+Note: User configuration file (~/.notebookmaker_config.yaml) lives in your home directory, NOT in the project.
 ```
 
 ## Development

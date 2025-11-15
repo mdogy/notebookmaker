@@ -1,0 +1,83 @@
+# NotebookMaker Configuration
+#
+# This configuration file specifies API keys for LLM providers used by NotebookMaker
+# to analyze lecture materials and generate interactive Jupyter notebooks.
+#
+# Installation:
+# 1. Copy this file to your home directory:
+#    cp .notebookmaker_config.yaml.example ~/.notebookmaker_config.yaml
+#
+# 2. Edit ~/.notebookmaker_config.yaml and add your API keys
+#
+# 3. Protect the file (recommended):
+#    chmod 600 ~/.notebookmaker_config.yaml
+#
+# Security Notes:
+# - NEVER commit ~/.notebookmaker_config.yaml to version control
+# - Keep API keys secure and never share them
+# - The file should be readable only by you (chmod 600)
+
+# API Keys
+# Add your API keys for the LLM providers you want to use.
+# You only need keys for the providers you plan to use.
+
+# Anthropic Claude API Key
+# Get your key at: https://console.anthropic.com/
+# The key should start with "sk-ant-"
+anthropic_api_key: "your-anthropic-key-here"
+
+# Google Gemini API Key
+# Get your key at: https://makersuite.google.com/app/apikey
+# Note: If you have gcloud CLI configured, you can leave this empty
+# and NotebookMaker will use Application Default Credentials
+google_api_key: "your-google-key-here"
+
+# OpenAI API Key
+# Get your key at: https://platform.openai.com/api-keys
+# The key should start with "sk-"
+openai_api_key: "your-openai-key-here"
+
+# OpenRouter API Key
+# Get your key at: https://openrouter.ai/keys
+# The key should start with "sk-or-"
+openrouter_api_key: "your-openrouter-key-here"
+
+# Optional: LLM Provider Selection
+# Uncomment and configure to override default provider/model selection
+# If not specified, NotebookMaker will use the first available provider
+# based on which API keys are configured
+
+# llm:
+#   provider: "anthropic"  # Options: anthropic, google, openai, openrouter
+#   model: "claude-3-5-sonnet-20241022"
+#   max_tokens: 4000
+#   temperature: 0.3
+
+# Alternative provider configurations:
+
+# Google Gemini:
+# llm:
+#   provider: "google"
+#   model: "gemini-2.5-flash"
+#   max_tokens: 40000
+#   temperature: 0.3
+
+# OpenAI:
+# llm:
+#   provider: "openai"
+#   model: "gpt-4o"
+#   max_tokens: 4000
+#   temperature: 0.3
+
+# OpenRouter (provides access to many models through one API):
+# llm:
+#   provider: "openrouter"
+#   model: "anthropic/claude-3-5-sonnet"
+#   max_tokens: 4000
+#   temperature: 0.3
+#   base_url: "https://openrouter.ai/api/v1"
+
+# Optional: Logging Configuration
+# logging:
+#   level: "INFO"  # Options: DEBUG, INFO, WARNING, ERROR
+#   log_llm_details: false  # Set to true to log API request/response details

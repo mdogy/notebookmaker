@@ -22,7 +22,7 @@ classifiers = [
 dependencies = [
     "click>=8.1.0",
     "pydantic>=2.0.0",
-    "python-dotenv>=1.0.0",
+    "pyyaml>=6.0.0",
     "anthropic>=0.18.0",
     "openai>=1.0.0",
     "google-generativeai>=0.3.0",
@@ -36,6 +36,7 @@ dev = [
     "pytest-cov>=4.0.0",
     "ruff>=0.1.0",
     "mypy>=1.0.0",
+    "types-PyYAML>=6.0.0",
     "cram>=0.7",
 ]
 
@@ -89,7 +90,6 @@ disallow_untyped_defs = false
 module = [
     "google.generativeai.*",
     "google.auth.*",
-    "dotenv.*",
 ]
 ignore_missing_imports = true
 

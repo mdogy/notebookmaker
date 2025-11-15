@@ -94,7 +94,7 @@ def main() -> None:
     if len(sys.argv) > 1:
         providers = [sys.argv[1]]
     else:
-        providers = ["anthropic", "google", "openai"]
+        providers = ["anthropic", "google", "openai", "openrouter"]
 
     results = {}
     for provider_name in providers:
