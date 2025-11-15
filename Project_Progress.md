@@ -38,16 +38,24 @@ The main application features are **not yet implemented**:
    - Dependencies added: `pypdf>=4.0.0`, `python-pptx>=0.6.23`
    - Tested on example PDF (42 pages, 5903 characters extracted)
 
-2. **Notebook Generation** (High Priority) - Not Started
-   - `generate_notebook()` - Create Jupyter notebooks from content
-   - Two outputs: Instructor version + Student version
-   - Need dependency: `nbformat`
+2. **Notebook Generation** (High Priority) - ✅ **COMPLETED**
+   - `generate_notebook()` - Create Jupyter notebooks from content using LLM
+   - Two outputs: Instructor version (complete code) + Student version (incomplete code with ....)
+   - Dependency added: `nbformat>=5.9.0`
+   - Full LLM integration with template-based prompts
 
-3. **Prompt Engineering** (Medium Priority) - Early drafts exist
-   - Design prompts for instructor notebook generation
-   - Design prompts for student notebook generation
-   - Use LLM to process extracted content into structured notebooks
-   - Status: Early versions in `prompts/` directory
+3. **Prompt Engineering** (Medium Priority) - ✅ **COMPLETED**
+   - Fragment-based prompt system in `prompts/fragments/`:
+     * `role.md` - Instructor persona
+     * `notebook_structure.md` - Cell pattern guidelines
+     * `student_version.md` - Student notebook constraints
+     * `instructor_version.md` - Instructor notebook requirements
+     * `tone.md` - Conversational style guidelines
+     * `output_format.md` - JSON response format
+   - Template files that assemble fragments:
+     * `student_notebook_template.md`
+     * `instructor_notebook_template.md`
+   - Prompts dynamically loaded and assembled at runtime
 
 4. **Main Pipeline** (High Priority) - Skeleton exists
    - `process_lecture()` - Orchestrate the full workflow:
@@ -100,7 +108,82 @@ Available resources:
 
 ## Appendix: Project History
 
-### Evolution from `b52f945` → `[current]` (2025-11-14)
+### Evolution from `[previous]` → `[current]` (2025-11-14)
+
+**From**: Hardcoded LLM prompts in code
+**To**: Fragment-based prompt template system
+
+**What Changed Between Commits**:
+
+The previous implementation had notebook generation prompts hardcoded as f-strings directly in the `_create_notebook_prompt()` function. This commit refactors the entire prompt system to use a modular, fragment-based architecture.
+
+**Key Additions**:
+
+1. **Prompt Fragments** (`prompts/fragments/`):
+   - `role.md` - Defines the instructor persona for the LLM
+   - `notebook_structure.md` - Specifies the Markdown → Code cell pattern
+   - `student_version.md` - Guidelines for creating incomplete code with `....` markers
+   - `instructor_version.md` - Requirements for complete, runnable code
+   - `tone.md` - Conversational style guidelines
+   - `output_format.md` - JSON response format specification
+
+2. **Template Files** (`prompts/`):
+   - `student_notebook_template.md` - Assembles student-specific fragments
+   - `instructor_notebook_template.md` - Assembles instructor-specific fragments
+   - Both use `{placeholder}` syntax for fragment injection
+
+3. **Prompt Loading System** (`utils.py`):
+   - `_load_prompt_fragment()` - Loads and processes individual fragment files
+   - `_create_notebook_prompt()` - Completely refactored to:
+     * Load the appropriate template based on notebook_type
+     * Load all required fragments
+     * Replace placeholders with fragment content
+     * Return assembled prompt
+
+4. **Type Safety Improvements**:
+   - Added TYPE_CHECKING guard for nbformat import
+   - Runtime validation of provider parameter with cast to Literal type
+   - Added type: ignore comments for untyped nbformat calls
+   - Updated pyproject.toml to ignore missing imports for nbformat, pypdf, pptx, tiktoken
+
+**Why This Evolution Matters**:
+
+This refactoring addresses a critical design flaw identified by the user: prompts should be **editable text files**, not hardcoded strings in Python. The new architecture provides several benefits:
+
+- **Maintainability**: Prompt engineering happens in markdown files, not Python code
+- **Experimentation**: Try different prompt variations without code changes
+- **Reusability**: Fragment composition allows mixing and matching components
+- **Separation of Concerns**: LLM instructions (prompts) are separate from orchestration logic (code)
+- **Version Control**: Prompt changes are tracked independently of code changes
+
+**Key Design Decisions**:
+
+- **Fragment System**: Breaking prompts into reusable pieces (role, tone, structure, etc.) allows flexibility. Student and instructor notebooks share most fragments but differ in version-specific guidelines.
+
+- **Template Assembly**: Using simple string replacement (`{placeholder}`) keeps the system understandable and debuggable. More sophisticated templating (Jinja2, etc.) wasn't needed.
+
+- **Header Removal**: Fragments have markdown headers (e.g., `# Role`) for readability when editing, but these are stripped when loading to avoid duplication in the assembled prompt.
+
+- **Runtime Loading**: Fragments are loaded from disk each time `generate_notebook()` is called. This allows prompt tuning without restarting the application (useful during development).
+
+**Migration Impact**:
+
+For users: None - this is an internal refactoring with no API changes.
+
+For developers: Prompt engineering now happens in `prompts/fragments/*.md` files instead of editing Python code. To modify prompts:
+1. Edit the relevant fragment file
+2. Test the change (no code restart needed)
+3. Commit the prompt change separately from code changes
+
+**Testing Notes**:
+
+- Mypy: All type errors resolved (mypy success: 7 source files)
+- Ruff: All linting errors fixed in utils.py
+- The prompt loading system has not yet been tested end-to-end with actual LLM calls (that requires implementing `process_lecture()`)
+
+---
+
+### Evolution from `b52f945` → `[previous]` (2025-11-14)
 
 **From**: Documentation standards with no content extraction
 **To**: Working PDF and PowerPoint extraction

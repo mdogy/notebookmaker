@@ -95,6 +95,10 @@ disallow_untyped_defs = false
 module = [
     "google.generativeai.*",
     "google.auth.*",
+    "nbformat.*",
+    "pypdf.*",
+    "pptx.*",
+    "tiktoken.*",
 ]
 ignore_missing_imports = true
 
