@@ -82,15 +82,9 @@ Add these to your shell profile (`~/.bashrc`, `~/.zshrc`, etc.) to make them per
 
 **Priority**: The configuration file (`~/.notebookmaker_config.yaml`) takes precedence over environment variables.
 
-#### Option 3: Google Cloud Application Default Credentials
+#### Option 3: (Not Required) Google Cloud Application Default Credentials
 
-For Google Gemini, if you have Google Cloud CLI installed:
-
-```bash
-gcloud auth application-default login
-```
-
-This allows NotebookMaker to use your Google Cloud credentials for Gemini API access.
+NotebookMaker does **not** require Google Cloud Application Default Credentials (ADC) for the lecture-to-notebook workflow. Configure Gemini access with an explicit API key instead of relying on `gcloud auth application-default login`.
 
 #### Getting API Keys
 
@@ -189,6 +183,7 @@ mypy src/
 
 ```bash
 # Run all tests
+source venv/bin/activate  # or prefix commands with venv/bin/python
 pytest -v
 
 # Run with coverage

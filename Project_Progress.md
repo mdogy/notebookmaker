@@ -32,16 +32,13 @@ The foundational architecture is complete and functional.
 
 ### 🚧 **IN PROGRESS - Testing and Documentation**
 
-1.  **Testing** (Medium Priority) - Not Started
-    -   Unit tests for `analysis.py`, `generation.py`, and `vision.py`.
-    -   Integration tests for the full two-phase pipeline.
-    -   Target: 80%+ code coverage.
+1.  **Testing** (Medium Priority) - In Progress (~20%)
+    -   Added first pytest modules covering Google analysis chunking, cached `process_lecture` flows, and notebook failure handling.
+    -   Next: expand coverage to `vision.py`, CLI integration, and non-Google providers to push toward the 80% goal.
 
-2.  **Documentation Updates** (Low Priority) - Not Started
-    -   Update `README.md` with new usage instructions for the two-phase CLI.
-    -   Document the `LectureAnalysis` JSON format.
-    -   Update `AGENTS.md` to reflect the new architecture.
-    -   Review and remove obsolete documentation files (`README_TWO_PHASE.md`, `DESIGN_TWO_PHASE.md`, `CLAUDE.md`).
+2.  **Documentation Updates** (Low Priority) - In Progress (~10%)
+    -   README now explicitly documents that ADC is not required and reminds contributors to run pytest inside the venv.
+    -   Pending: LectureAnalysis JSON reference, AGENTS refresh, and doc cleanup.
 
 ### 🎯 **Recommended Next Steps**
 
@@ -66,6 +63,37 @@ With the core two-phase architecture now implemented, the highest priority is to
 ---
 
 ## Appendix: Project History
+
+### Evolution from `[previous]` → `[current]` (2025-11-14)
+
+**From**: Google flow worked manually but had no automated validation and notebook generation would silently succeed even when every LLM call failed.
+
+**To**: Added regression tests for the Google provider path, clarified documentation about environment setup, and hardened notebook generation so zero-section failures raise immediately.
+
+**What Changed Between Commits**:
+
+1. **Generation Fail-Fast** (`src/notebookmaker/generation.py`):
+   - Tracks how many sections actually produce notebook cells.
+   - Raises a descriptive `ValueError` when all sections fail, preventing empty `.ipynb` artifacts and giving CLI users actionable guidance.
+
+2. **Google-Focused Tests** (`tests/test_analysis_google.py`, `tests/test_utils_google_flow.py`, `tests/test_generation_errors.py`):
+   - Mock-based pytest coverage verifies Gemini chunk payloads, cached analysis reuse, default provider selection, and the new failure branch.
+   - Establishes a template for future provider-specific suites without requiring live API calls.
+
+3. **Real Dependency Usage** (`tests/conftest.py`, README):
+   - Pytest now imports the actual installed `pdf2image` and `nbformat` packages instead of stubs so we exercise the same code that runs in production.
+   - README instructs contributors to activate the venv before running pytest, ensuring consistent dependencies.
+
+**Why This Evolution Matters**:
+
+- Gives immediate visibility when notebook generation fails, reducing debugging time.
+- Introduces the first automated safety net for the Google flow, a prerequisite before layering in Anthropic/OpenAI coverage.
+- Aligns developer documentation with the actual setup so local and CI environments behave the same way.
+
+**Migration Impact**:
+
+- CLI now exits with an error if no sections generate; scripting that relied on silent success must handle the exception.
+- Developers must ensure `venv` dependencies (notably `pdf2image` and `nbformat`) are installed before running pytest; no other migration steps required.
 
 ### Evolution from `421bcc4` → `[current]` (2025-11-14)
 

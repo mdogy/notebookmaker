@@ -373,6 +373,7 @@ def generate_notebook_from_analysis(
 
     # Generate cells for each section
     all_cells_text = []
+    successful_sections = 0
 
     # Add title cell
     title_cell = f"""# %% [markdown]
@@ -395,10 +396,17 @@ def generate_notebook_from_analysis(
             )
             all_cells_text.append(section_cells)
             logger.info(f"  [{i}/{len(ordered_sections)}] Generated: {section.title}")
+            successful_sections += 1
         except Exception as e:
             logger.error(f"Failed to generate section '{section.title}': {e}")
             # Continue with other sections
             continue
+
+    if successful_sections == 0:
+        raise ValueError(
+            "Failed to generate any sections for the notebook. "
+            "Check provider/model settings or lower --min-priority."
+        )
 
     # Combine all cells
     complete_notebook_text = "\n\n".join(all_cells_text)

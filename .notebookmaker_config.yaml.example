@@ -28,8 +28,7 @@ anthropic_api_key: "your-anthropic-key-here"
 
 # Google Gemini API Key
 # Get your key at: https://makersuite.google.com/app/apikey
-# Note: If you have gcloud CLI configured, you can leave this empty
-# and NotebookMaker will use Application Default Credentials
+# NotebookMaker requires an explicit API key; ADC is not needed.
 google_api_key: "your-google-key-here"
 
 # OpenAI API Key
