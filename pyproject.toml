@@ -31,6 +31,8 @@ dependencies = [
     # Document processing
     "pypdf>=4.0.0",
     "python-pptx>=0.6.23",
+    "Pillow>=10.0.0",
+    "pdf2image>=1.16.0",
     # Jupyter notebook generation
     "nbformat>=5.9.0",
 ]
@@ -99,6 +101,8 @@ module = [
     "pypdf.*",
     "pptx.*",
     "tiktoken.*",
+    "pdf2image.*",
+    "PIL.*",
 ]
 ignore_missing_imports = true
 

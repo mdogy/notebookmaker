@@ -31,6 +31,8 @@ __all__ = [
     "CredentialManager",
     # Configuration helpers
     "get_llm_config",
+    "get_analysis_config",
+    "get_generation_config",
     "get_logging_config",
 ]
 
@@ -92,13 +94,37 @@ def get_provider(
 
 def get_llm_config() -> dict[str, Any]:
     """
-    Get LLM configuration from config file.
+    Get LLM configuration from config file (legacy single-phase mode).
 
     Returns:
         Dictionary with LLM config (provider, model, max_tokens, temperature, etc.)
         or empty dict if not configured
     """
     return CredentialManager.get_llm_config()
+
+
+def get_analysis_config() -> dict[str, Any]:
+    """
+    Get analysis phase LLM configuration from config file.
+
+    Returns:
+        Dictionary with analysis config (provider, model, max_tokens, etc.)
+        or empty dict if not configured. Falls back to 'llm' config if
+        'analysis' is not specified.
+    """
+    return CredentialManager.get_analysis_config()
+
+
+def get_generation_config() -> dict[str, Any]:
+    """
+    Get generation phase LLM configuration from config file.
+
+    Returns:
+        Dictionary with generation config (provider, model, max_tokens, etc.)
+        or empty dict if not configured. Falls back to 'llm' config if
+        'generation' is not specified.
+    """
+    return CredentialManager.get_generation_config()
 
 
 def get_logging_config() -> dict[str, Any]:

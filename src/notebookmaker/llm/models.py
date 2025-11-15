@@ -6,12 +6,19 @@ from pydantic import BaseModel, Field, SecretStr
 
 
 class LLMMessage(BaseModel):
-    """Standardized message format for LLM interactions."""
+    """Standardized message format for LLM interactions.
+
+    For text-only messages, content is a string.
+    For multimodal messages (images + text), content is a list of content parts.
+    Each content part is a dict with 'type' and provider-specific fields.
+    """
 
     role: Literal["system", "user", "assistant"] = Field(
         description="The role of the message sender"
     )
-    content: str = Field(description="The content of the message")
+    content: str | list[Any] = Field(
+        description="The content of the message (string for text, list for multimodal)"
+    )
 
     model_config = {
         "json_schema_extra": {
@@ -19,6 +26,13 @@ class LLMMessage(BaseModel):
                 {
                     "role": "user",
                     "content": "Extract topics from the following lecture...",
+                },
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": "What's in this image?"},
+                        {"type": "image_url", "image_url": {"url": "data:image/png;base64,..."}}
+                    ]
                 }
             ]
         }

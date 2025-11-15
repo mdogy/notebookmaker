@@ -271,11 +271,18 @@ class GoogleProvider(LLMProvider):
 
         for msg in messages:
             if msg.role == "system":
+                # System messages should be strings
+                if isinstance(msg.content, list):
+                    raise ValueError("System messages cannot contain multimodal content")
                 system_instructions.append(msg.content)
             elif msg.role == "assistant":
-                gemini_messages.append({"role": "model", "parts": [msg.content]})
+                # For multimodal content, content is already a list
+                parts = msg.content if isinstance(msg.content, list) else [msg.content]
+                gemini_messages.append({"role": "model", "parts": parts})
             else:  # user
-                gemini_messages.append({"role": msg.role, "parts": [msg.content]})
+                # For multimodal content, content is already a list
+                parts = msg.content if isinstance(msg.content, list) else [msg.content]
+                gemini_messages.append({"role": msg.role, "parts": parts})
 
         # Create model with configuration
         generation_config = {

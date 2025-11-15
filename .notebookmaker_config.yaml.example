@@ -47,35 +47,67 @@ openrouter_api_key: "your-openrouter-key-here"
 # If not specified, NotebookMaker will use the first available provider
 # based on which API keys are configured
 
+# Single-phase mode (legacy - uses same LLM for everything):
 # llm:
 #   provider: "anthropic"  # Options: anthropic, google, openai, openrouter
 #   model: "claude-3-5-sonnet-20241022"
 #   max_tokens: 4000
 #   temperature: 0.3
 
-# Alternative provider configurations:
+# Two-phase mode (recommended - separate LLMs for analysis and generation):
+# Phase 1 analyzes PDF with vision capabilities to extract code/equations
+# Phase 2 generates focused notebooks from the analysis
 
-# Google Gemini:
-# llm:
-#   provider: "google"
-#   model: "gemini-2.5-flash"
-#   max_tokens: 40000
+# RECOMMENDED: Use Gemini 2.0 Flash for both phases (multimodal + fast)
+analysis:
+  provider: "google"
+  model: "gemini-2.0-flash-exp"  # Multimodal: supports image input
+  max_tokens: 2000
+  temperature: 0.3
+
+generation:
+  provider: "google"
+  model: "gemini-2.0-flash-exp"  # Can use same or different model
+  max_tokens: 16000
+  temperature: 0.3
+
+# Alternative configurations for two-phase mode:
+
+# Use Claude 3.5 Sonnet for both (excellent vision + reasoning):
+# analysis:
+#   provider: "anthropic"
+#   model: "claude-3-5-sonnet-20241022"  # Multimodal
+#   max_tokens: 2000
+#   temperature: 0.3
+# generation:
+#   provider: "anthropic"
+#   model: "claude-3-5-sonnet-20241022"
+#   max_tokens: 16000
 #   temperature: 0.3
 
-# OpenAI:
-# llm:
+# Use different models for each phase (cost optimization):
+# analysis:
+#   provider: "anthropic"
+#   model: "claude-3-5-haiku-20241022"  # Fast, cheap, multimodal
+#   max_tokens: 2000
+#   temperature: 0.3
+# generation:
+#   provider: "anthropic"
+#   model: "claude-3-5-sonnet-20241022"  # Better quality for generation
+#   max_tokens: 16000
+#   temperature: 0.3
+
+# Use GPT-4o for both phases:
+# analysis:
 #   provider: "openai"
-#   model: "gpt-4o"
-#   max_tokens: 4000
+#   model: "gpt-4o"  # Excellent vision capabilities
+#   max_tokens: 2000
 #   temperature: 0.3
-
-# OpenRouter (provides access to many models through one API):
-# llm:
-#   provider: "openrouter"
-#   model: "anthropic/claude-3-5-sonnet"
-#   max_tokens: 4000
+# generation:
+#   provider: "openai"
+#   model: "gpt-4o-mini"  # Cheaper alternative for generation
+#   max_tokens: 16000
 #   temperature: 0.3
-#   base_url: "https://openrouter.ai/api/v1"
 
 # Optional: Logging Configuration
 # logging:

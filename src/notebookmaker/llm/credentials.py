@@ -268,9 +268,53 @@ class CredentialManager:
         return is_valid
 
     @staticmethod
+    def get_analysis_config() -> dict[str, Any]:
+        """
+        Get analysis phase LLM configuration from config file.
+
+        Returns:
+            Dictionary with analysis config (provider, model, max_tokens, etc.)
+            or empty dict if not configured. Falls back to 'llm' config if
+            'analysis' is not specified.
+        """
+        config = CredentialManager._load_config()
+
+        # Check for two-phase config first
+        if "analysis" in config and isinstance(config["analysis"], dict):
+            return config["analysis"]
+
+        # Fall back to single-phase 'llm' config
+        if "llm" in config and isinstance(config["llm"], dict):
+            return config["llm"]
+
+        return {}
+
+    @staticmethod
+    def get_generation_config() -> dict[str, Any]:
+        """
+        Get generation phase LLM configuration from config file.
+
+        Returns:
+            Dictionary with generation config (provider, model, max_tokens, etc.)
+            or empty dict if not configured. Falls back to 'llm' config if
+            'generation' is not specified.
+        """
+        config = CredentialManager._load_config()
+
+        # Check for two-phase config first
+        if "generation" in config and isinstance(config["generation"], dict):
+            return config["generation"]
+
+        # Fall back to single-phase 'llm' config
+        if "llm" in config and isinstance(config["llm"], dict):
+            return config["llm"]
+
+        return {}
+
+    @staticmethod
     def get_llm_config() -> dict[str, Any]:
         """
-        Get LLM configuration from config file.
+        Get LLM configuration from config file (legacy single-phase mode).
 
         Returns:
             Dictionary with LLM config (provider, model, max_tokens, temperature, etc.)
