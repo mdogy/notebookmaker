@@ -79,13 +79,13 @@ This is a Python project following modern best practices with strict type checki
 - Run with coverage: `coverage run -m pytest`
 - Generate report: `coverage report -m`
 - Generate HTML: `coverage html` (view at `htmlcov/index.html`)
-- Target: 90%+ coverage for all modules
+- Target: 80%+ coverage for all modules (aim for this minimum, no need to obsess beyond it)
 - Focus coverage on library code, not thin script wrappers
 
 # Workflow
 
 1. **Before coding**: Review project structure and identify where new functionality belongs (library vs. script)
-2. **During coding**: 
+2. **During coding**:
    - Write library functions with full type hints
    - Add Pydantic models for data validation
    - Keep scripts minimal—delegate logic to libraries
@@ -93,8 +93,14 @@ This is a Python project following modern best practices with strict type checki
    - Run `ruff check . && ruff format .`
    - Run `mypy src/`
    - Write tests and run `pytest -v`
-   - Check coverage: `coverage run -m pytest && coverage report -m`
-4. **Before committing**: Ensure all quality checks pass
+   - Check coverage: `coverage run -m pytest && coverage report -m` (aim for 80%+)
+4. **Before committing**:
+   - Ensure all quality checks pass
+   - Update `README.md` if user-facing features, installation, or usage changed
+   - Update `Project_Progress.md` with:
+     * Status changes (% completion updates for completed/in-progress sections)
+     * New evolution section explaining commit-to-commit changes
+     * Semantic context: what changed, why it matters, migration impact
 
 # Code Style
 

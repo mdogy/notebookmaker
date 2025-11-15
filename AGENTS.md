@@ -25,12 +25,19 @@
 ## Testing Guidelines
 - Mirror module names (`tests/test_cli.py`, `tests/llm/test_providers.py`, etc.) so pytest discovery (`test_*.py`, `Test*`, `test_*`) matches `pyproject.toml`.
 - Use `click.testing.CliRunner` for CLI units, Pydantic factories for datum validation, and fixtures to mock LLM responses. Add cram `.t` files whenever a CLI flow spans multiple shell steps.
-- Keep coverage above 90% by focusing on library code rather than the thin CLI wrapper; record manual credential checks in PR descriptions.
+- Keep coverage above 80% by focusing on library code rather than the thin CLI wrapper; record manual credential checks in PR descriptions. (80% is the goal - no need to thrash beyond it.)
 
 ## Commit & Pull Request Guidelines
-- Follow the existing imperative tense seen in `git log` (e.g., “Add NotebookMaker package structure”); keep subjects ≤72 chars and limit each commit to one concern.
+- Follow the existing imperative tense seen in `git log` (e.g., "Add NotebookMaker package structure"); keep subjects ≤72 chars and limit each commit to one concern.
+- **Before each commit**, maintain documentation:
+  * Update `README.md` if user-facing features, installation steps, or usage patterns changed
+  * Update `Project_Progress.md` with a new evolution section explaining:
+    - What changed from the previous commit (not just what the commit did)
+    - Why those changes matter (architectural impact, user benefits)
+    - Migration impact and key differences (before/after comparison)
+    - Status percentage updates for completed/in-progress work
 - A PR description must summarize intent, list the quality gates you ran (`ruff`, `mypy`, `pytest`, coverage, cram, credential smoke tests), and cross-link issues or design docs. Include screenshots only when notebook UX shifts.
-- Ensure `.env` stays untracked, scrub API keys from notebooks/logs, and rotate shared keys if any provider command reports unauthorized access.
+- Ensure `~/.notebookmaker_config.yaml` stays out of version control, scrub API keys from notebooks/logs, and rotate shared keys if any provider command reports unauthorized access.
 
 ## API & Security Notes
 - Configure Anthropic, Gemini, OpenAI, or OpenRouter keys through `~/.notebookmaker_config.yaml` (see `.notebookmaker_config.yaml.example`) or environment variables, and prefer sandbox-scoped tokens.

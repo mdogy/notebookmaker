@@ -60,7 +60,7 @@ The main application features are **not yet implemented**:
    - Unit tests for extraction functions
    - Unit tests for notebook generation
    - Integration tests for full pipeline
-   - Target: 90%+ coverage
+   - Target: 80%+ coverage (no need to obsess beyond this minimum)
 
 6. **Documentation Updates** (Low Priority) - Partially complete
    - Update `AGENTS.md` (still references `.env` files - line 36)
