@@ -17,20 +17,20 @@ from pathlib import Path
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
-from notebookmaker.llm import get_provider, LLMMessage
+from notebookmaker.llm import LLMMessage, get_provider
 
 
 def test_provider(provider_name: str) -> bool:
     """Test a single provider with a simple API call."""
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"Testing {provider_name.upper()} Provider")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
 
     try:
         # Try to get provider (will auto-discover credentials)
         print(f"1. Auto-discovering credentials for {provider_name}...")
         provider = get_provider(provider_name)
-        print(f"   ✓ Credentials found and provider initialized")
+        print("   ✓ Credentials found and provider initialized")
 
         # Choose appropriate model
         models = {
@@ -43,9 +43,7 @@ def test_provider(provider_name: str) -> bool:
 
         # Make a simple API call
         print(f"2. Making test API call with model: {model}...")
-        test_prompt = "Say 'Hello from {}!' and nothing else.".format(
-            provider_name.upper()
-        )
+        test_prompt = f"Say 'Hello from {provider_name.upper()}!' and nothing else."
 
         response = provider.generate(
             messages=[LLMMessage(role="user", content=test_prompt)],
@@ -54,7 +52,7 @@ def test_provider(provider_name: str) -> bool:
             max_tokens=50,
         )
 
-        print(f"   ✓ API call successful!")
+        print("   ✓ API call successful!")
         print(f"\n   Response: {response.content}")
         print(f"   Model used: {response.model}")
         print(
@@ -64,7 +62,7 @@ def test_provider(provider_name: str) -> bool:
         )
 
         # Test token counting
-        print(f"\n3. Testing token counting...")
+        print("\n3. Testing token counting...")
         test_text = "This is a test sentence for token counting."
         token_count = provider.count_tokens(test_text, model)
         print(f"   ✓ Token count for test text: {token_count} tokens")
@@ -101,9 +99,9 @@ def main() -> None:
         results[provider_name] = test_provider(provider_name)
 
     # Summary
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print("TEST SUMMARY")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
 
     for provider_name, passed in results.items():
         status = "✅ PASSED" if passed else "❌ FAILED"

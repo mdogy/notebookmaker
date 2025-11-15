@@ -3,7 +3,7 @@
 import logging
 import os
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import yaml
 
@@ -54,7 +54,7 @@ class CredentialManager:
             return CredentialManager._config_cache
 
         try:
-            with open(config_path, "r") as f:
+            with open(config_path) as f:
                 config = yaml.safe_load(f) or {}
                 CredentialManager._config_cache = config
                 logger.info(f"Loaded configuration from {config_path}")
@@ -80,9 +80,11 @@ class CredentialManager:
         """
         # 1. Check config file first (highest priority)
         config = CredentialManager._load_config()
-        if key := config.get("anthropic_api_key"):
-            # Skip placeholder values from example file
-            if isinstance(key, str) and key != "your-anthropic-key-here":
+        if (
+            (key := cast(str | None, config.get("anthropic_api_key")))
+            and isinstance(key, str)
+            and key != "your-anthropic-key-here"
+        ):
                 logger.info("Found Anthropic API key in ~/.notebookmaker_config.yaml")
                 if CredentialManager._validate_key(key, "anthropic"):
                     return key
@@ -122,9 +124,11 @@ class CredentialManager:
         """
         # 1. Check config file first (highest priority)
         config = CredentialManager._load_config()
-        if key := config.get("google_api_key"):
-            # Skip placeholder values from example file
-            if isinstance(key, str) and key != "your-google-key-here":
+        if (
+            (key := cast(str | None, config.get("google_api_key")))
+            and isinstance(key, str)
+            and key != "your-google-key-here"
+        ):
                 logger.info("Found Google API key in ~/.notebookmaker_config.yaml")
                 if CredentialManager._validate_key(key, "google"):
                     return key
@@ -142,9 +146,7 @@ class CredentialManager:
                 return key
 
         # 4. Check for Application Default Credentials (from gcloud CLI)
-        adc_path = (
-            Path.home() / ".config/gcloud/application_default_credentials.json"
-        )
+        adc_path = Path.home() / ".config/gcloud/application_default_credentials.json"
         if adc_path.exists():
             logger.info(
                 "Found Google Application Default Credentials "
@@ -171,9 +173,11 @@ class CredentialManager:
         """
         # 1. Check config file first (highest priority)
         config = CredentialManager._load_config()
-        if key := config.get("openai_api_key"):
-            # Skip placeholder values from example file
-            if isinstance(key, str) and key != "your-openai-key-here":
+        if (
+            (key := cast(str | None, config.get("openai_api_key")))
+            and isinstance(key, str)
+            and key != "your-openai-key-here"
+        ):
                 logger.info("Found OpenAI API key in ~/.notebookmaker_config.yaml")
                 if CredentialManager._validate_key(key, "openai"):
                     return key
@@ -209,9 +213,11 @@ class CredentialManager:
         """
         # 1. Check config file first (highest priority)
         config = CredentialManager._load_config()
-        if key := config.get("openrouter_api_key"):
-            # Skip placeholder values from example file
-            if isinstance(key, str) and key != "your-openrouter-key-here":
+        if (
+            (key := cast(str | None, config.get("openrouter_api_key")))
+            and isinstance(key, str)
+            and key != "your-openrouter-key-here"
+        ):
                 logger.info("Found OpenRouter API key in ~/.notebookmaker_config.yaml")
                 if CredentialManager._validate_key(key, "openrouter"):
                     return key

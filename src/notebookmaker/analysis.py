@@ -60,8 +60,7 @@ def analyze_pdf_chunk(
         ValueError: If LLM returns invalid JSON
     """
     logger.info(
-        f"Analyzing chunk {chunk_index + 1}/{total_chunks} "
-        f"({len(images)} pages)"
+        f"Analyzing chunk {chunk_index + 1}/{total_chunks} ({len(images)} pages)"
     )
 
     # Load prompt fragments
@@ -69,17 +68,17 @@ def analyze_pdf_chunk(
     analysis_output_format = _load_prompt_fragment("analysis_output_format")
 
     # Build the prompt
-    prompt = f"""You are analyzing pages from a lecture PDF to extract structured information about code-worthy content.
-
-This is chunk {chunk_index + 1} of {total_chunks}.
-Pages in this chunk: approximately {chunk_index * 10 + 1} to {chunk_index * 10 + len(images)}
-
-{analysis_instructions}
-
-{analysis_output_format}
-
-Analyze the images provided and output ONLY valid JSON matching the schema above.
-"""
+    prompt = (
+        "You are analyzing pages from a lecture PDF to extract structured "
+        "information about code-worthy content.\n\n"
+        f"This is chunk {chunk_index + 1} of {total_chunks}.\n"
+        f"Pages in this chunk: approximately {chunk_index * 10 + 1} to "
+        f"{chunk_index * 10 + len(images)}\n\n"
+        f"{analysis_instructions}\n\n"
+        f"{analysis_output_format}\n\n"
+        "Analyze the images provided and output ONLY valid JSON matching the "
+        "schema above."
+    )
 
     # Get provider instance
     llm = get_provider(provider, api_key=None)
@@ -174,7 +173,8 @@ Analyze the images provided and output ONLY valid JSON matching the schema above
     try:
         chunk_analysis: dict[str, Any] = json.loads(response_text)
         logger.info(
-            f"  Parsed successfully: found {len(chunk_analysis.get('sections', []))} sections"
+            f"  Parsed successfully: found "
+            f"{len(chunk_analysis.get('sections', []))} sections"
         )
         return chunk_analysis
     except json.JSONDecodeError as e:
@@ -268,7 +268,8 @@ def analyze_pdf(
 
     Args:
         pdf_path: Path to PDF file
-        output_path: Optional path to save analysis JSON (default: pdf_path with .analysis.json)
+        output_path: Optional path to save analysis JSON (default: pdf_path with
+            .analysis.json)
         chunk_size: Pages per API call (default: 10)
         provider: LLM provider for vision analysis
         model: Model name (uses provider default if None)

@@ -34,9 +34,7 @@ class LLMProvider(ABC):
             logger.info(f"Using provided API key for {self.__class__.__name__}")
             self.api_key = api_key
         else:
-            logger.info(
-                f"Auto-discovering credentials for {self.__class__.__name__}"
-            )
+            logger.info(f"Auto-discovering credentials for {self.__class__.__name__}")
             discovered_key = self._discover_credentials()
             if not discovered_key:
                 raise ValueError(
@@ -130,8 +128,7 @@ class AnthropicProvider(LLMProvider):
             from anthropic import Anthropic
         except ImportError as e:
             raise ImportError(
-                "anthropic package not installed. "
-                "Install with: pip install anthropic"
+                "anthropic package not installed. Install with: pip install anthropic"
             ) from e
 
         client = Anthropic(api_key=self.api_key)
@@ -142,7 +139,12 @@ class AnthropicProvider(LLMProvider):
         conversation_messages = [m for m in messages if m.role != "system"]
 
         # Build system prompt
-        system_prompt = "\n\n".join(m.content for m in system_messages)
+        system_prompts = []
+        for m in system_messages:
+            if isinstance(m.content, list):
+                raise ValueError("System messages cannot contain multimodal content for Anthropic")
+            system_prompts.append(m.content)
+        system_prompt = "\n\n".join(system_prompts)
 
         # Build conversation
         anthropic_messages = [
@@ -186,8 +188,7 @@ class AnthropicProvider(LLMProvider):
             usage=LLMUsage(
                 prompt_tokens=response.usage.input_tokens,
                 completion_tokens=response.usage.output_tokens,
-                total_tokens=response.usage.input_tokens
-                + response.usage.output_tokens,
+                total_tokens=response.usage.input_tokens + response.usage.output_tokens,
             ),
             metadata={
                 "id": response.id,
@@ -273,7 +274,9 @@ class GoogleProvider(LLMProvider):
             if msg.role == "system":
                 # System messages should be strings
                 if isinstance(msg.content, list):
-                    raise ValueError("System messages cannot contain multimodal content")
+                    raise ValueError(
+                        "System messages cannot contain multimodal content"
+                    )
                 system_instructions.append(msg.content)
             elif msg.role == "assistant":
                 # For multimodal content, content is already a list
@@ -304,7 +307,8 @@ class GoogleProvider(LLMProvider):
         )
 
         response = gemini_model.generate_content(
-            gemini_messages, generation_config=generation_config  # type: ignore
+            gemini_messages,
+            generation_config=generation_config,  # type: ignore
         )
 
         # Extract usage info (if available)
@@ -399,9 +403,7 @@ class OpenAIProvider(LLMProvider):
         client = OpenAI(api_key=self.api_key)
 
         # Convert to OpenAI format
-        openai_messages = [
-            {"role": m.role, "content": m.content} for m in messages
-        ]
+        openai_messages = [{"role": m.role, "content": m.content} for m in messages]
 
         logger.info(
             f"Calling OpenAI API with model={model}, "
@@ -418,9 +420,7 @@ class OpenAIProvider(LLMProvider):
         # Extract usage info with fallback
         usage = response.usage
         if usage is None:
-            usage_info = LLMUsage(
-                prompt_tokens=0, completion_tokens=0, total_tokens=0
-            )
+            usage_info = LLMUsage(prompt_tokens=0, completion_tokens=0, total_tokens=0)
         else:
             usage_info = LLMUsage(
                 prompt_tokens=usage.prompt_tokens,
@@ -498,14 +498,10 @@ class OpenRouterProvider(LLMProvider):
             ) from e
 
         # OpenRouter uses OpenAI-compatible API with custom base URL
-        client = OpenAI(
-            api_key=self.api_key, base_url="https://openrouter.ai/api/v1"
-        )
+        client = OpenAI(api_key=self.api_key, base_url="https://openrouter.ai/api/v1")
 
         # Convert to OpenAI format
-        openai_messages = [
-            {"role": m.role, "content": m.content} for m in messages
-        ]
+        openai_messages = [{"role": m.role, "content": m.content} for m in messages]
 
         logger.info(
             f"Calling OpenRouter API with model={model}, "
@@ -522,9 +518,7 @@ class OpenRouterProvider(LLMProvider):
         # Extract usage info with fallback
         usage = response.usage
         if usage is None:
-            usage_info = LLMUsage(
-                prompt_tokens=0, completion_tokens=0, total_tokens=0
-            )
+            usage_info = LLMUsage(prompt_tokens=0, completion_tokens=0, total_tokens=0)
         else:
             usage_info = LLMUsage(
                 prompt_tokens=usage.prompt_tokens,

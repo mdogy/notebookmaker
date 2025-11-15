@@ -31,9 +31,12 @@ class LLMMessage(BaseModel):
                     "role": "user",
                     "content": [
                         {"type": "text", "text": "What's in this image?"},
-                        {"type": "image_url", "image_url": {"url": "data:image/png;base64,..."}}
-                    ]
-                }
+                        {
+                            "type": "image_url",
+                            "image_url": {"url": "data:image/png;base64,..."},
+                        },
+                    ],
+                },
             ]
         }
     }
@@ -94,6 +97,4 @@ class ProviderConfig(BaseModel):
         default_factory=dict, description="Provider-specific parameters"
     )
 
-    model_config = {
-        "json_encoders": {SecretStr: lambda v: "***" if v else None}
-    }
+    model_config = {"json_encoders": {SecretStr: lambda v: "***" if v else None}}

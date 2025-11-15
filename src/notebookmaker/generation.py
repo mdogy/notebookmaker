@@ -2,10 +2,12 @@
 
 import json
 import logging
+import re
 from pathlib import Path
-from typing import Literal
+from typing import Literal, cast
 
 import nbformat
+from nbformat.v4 import new_code_cell
 
 from .llm import get_provider
 from .llm.models import LLMMessage
@@ -145,7 +147,10 @@ Include both markdown and code cells as appropriate.
 """
 
     # Get provider instance
-    llm = get_provider(provider, api_key=None)
+    provider_literal = cast(
+        Literal["anthropic", "google", "openai", "openrouter"], provider
+    )
+    llm = get_provider(provider_literal, api_key=None)
 
     # Determine model to use
     if model is None:
@@ -189,6 +194,142 @@ Include both markdown and code cells as appropriate.
     return notebook_cells
 
 
+def _consolidate_imports(notebook: nbformat.NotebookNode) -> nbformat.NotebookNode:
+    """
+    Finds all import statements in a notebook, consolidates them into a
+    single cell at the beginning, and removes them from their original cells.
+    """
+    collected_imports = set()
+    first_code_cell_idx = -1
+
+    for i, cell in enumerate(notebook.cells):
+        if cell.cell_type == "code":
+            if first_code_cell_idx == -1:
+                first_code_cell_idx = i
+
+            lines = cell.source.split("\n")
+            remaining_lines = []
+            for line in lines:
+                if re.match(r"^\s*(import|from)\s+", line):
+                    collected_imports.add(line)
+                else:
+                    remaining_lines.append(line)
+
+            cell.source = "\n".join(remaining_lines)
+
+    # If imports were found, create a new cell and insert it
+    if collected_imports and first_code_cell_idx != -1:
+        # Sort imports for consistency
+        sorted_imports = sorted(collected_imports)
+        imports_cell_source = "\n".join(sorted_imports)
+        imports_cell = new_code_cell(source=imports_cell_source)  # type: ignore[no-untyped-call]
+
+        # Insert the new cell at the position of the first code cell
+        notebook.cells.insert(first_code_cell_idx, imports_cell)
+
+    # Clean up any cells that are now empty or just whitespace
+    notebook.cells = [cell for cell in notebook.cells if cell.source.strip()]
+
+    return notebook
+
+
+def _parse_llm_response_to_notebook(
+    llm_response: str, notebook_type: str
+) -> nbformat.NotebookNode:
+    """Parse LLM percent-formatted Python response into a Jupyter notebook.
+
+    Args:
+        llm_response: Percent-formatted Python from LLM (with # %% markers)
+        notebook_type: Type of notebook
+
+    Returns:
+        NotebookNode object
+    """
+    from nbformat.v4 import new_code_cell, new_markdown_cell, new_notebook
+
+    # Extract Python code if wrapped in markdown code block
+    content = llm_response.strip()
+    code_block_match = re.search(r"```(?:python)?\s*\n(.*?)\n```", content, re.DOTALL)
+    if code_block_match:
+        content = code_block_match.group(1).strip()
+
+    # Split by cell markers
+    lines = content.split("\n")
+    cells: list[nbformat.NotebookNode] = []
+    current_cell_type: str | None = None
+    current_cell_lines: list[str] = []
+
+    def save_current_cell() -> None:
+        """Save accumulated lines as a cell."""
+        if current_cell_type is None or not current_cell_lines:
+            return
+
+        if current_cell_type == "markdown":
+            # Remove '# ' prefix from each line
+            markdown_lines = []
+            for line in current_cell_lines:
+                if line.startswith("# "):
+                    markdown_lines.append(line[2:])
+                elif line.startswith("#"):
+                    # Just '#' with nothing after it
+                    markdown_lines.append("")
+                else:
+                    # Line without '# ' prefix (shouldn't happen but handle it)
+                    markdown_lines.append(line)
+            cell_content = "\n".join(markdown_lines)
+            cells.append(new_markdown_cell(cell_content))  # type: ignore[no-untyped-call]
+        else:  # code
+            cell_content = "\n".join(current_cell_lines)
+            cells.append(new_code_cell(cell_content))  # type: ignore[no-untyped-call]
+
+    for line in lines:
+        # Check for cell markers
+        if line.strip() == "# %% [markdown]":
+            save_current_cell()
+            current_cell_type = "markdown"
+            current_cell_lines = []
+        elif line.strip() == "# %%":
+            save_current_cell()
+            current_cell_type = "code"
+            current_cell_lines = []
+        else:
+            # Add line to current cell
+            if current_cell_type is not None:
+                current_cell_lines.append(line)
+
+    # Save the last cell
+    save_current_cell()
+
+    # If no cells were created, create an error cell
+    if not cells:
+        error_msg = (
+            "# Error\n\n"
+            "Failed to parse notebook content.\n\n"
+            "Expected percent-formatted Python with `# %%` markers."
+        )
+        cells.append(new_markdown_cell(error_msg))  # type: ignore[no-untyped-call]
+
+    # Create notebook
+    nb = new_notebook(cells=cells)  # type: ignore[no-untyped-call]
+
+    # Add metadata
+    nb.metadata.update(
+        {
+            "kernelspec": {
+                "display_name": "Python 3",
+                "language": "python",
+                "name": "python3",
+            },
+            "language_info": {
+                "name": "python",
+                "version": "3.11.0",
+            },
+        }
+    )
+
+    return cast(nbformat.NotebookNode, nb)
+
+
 def generate_notebook_from_analysis(
     analysis: LectureAnalysis,
     output_path: Path,
@@ -218,7 +359,9 @@ def generate_notebook_from_analysis(
 
     # Get code sections in dependency order
     code_sections = analysis.get_code_sections(min_priority=min_priority)
-    ordered_sections = [s for s in analysis.get_dependency_order() if s in code_sections]
+    ordered_sections = [
+        s for s in analysis.get_dependency_order() if s in code_sections
+    ]
 
     if not ordered_sections:
         raise ValueError(
@@ -261,14 +404,17 @@ def generate_notebook_from_analysis(
     complete_notebook_text = "\n\n".join(all_cells_text)
 
     # Parse into notebook format
-    from .utils import _parse_llm_response_to_notebook
-
     notebook = _parse_llm_response_to_notebook(complete_notebook_text, notebook_type)
+
+    # Consolidate imports for instructor notebooks
+    if notebook_type == "instructor":
+        logger.info("Consolidating imports for instructor notebook...")
+        notebook = _consolidate_imports(notebook)
 
     # Save to file
     output_path.parent.mkdir(parents=True, exist_ok=True)
     with open(output_path, "w") as f:
-        nbformat.write(notebook, f)
+        nbformat.write(notebook, f)  # type: ignore[no-untyped-call]
 
     logger.info(f"Saved {notebook_type} notebook to: {output_path}")
     logger.info(f"  Total cells: {len(notebook.cells)}")
