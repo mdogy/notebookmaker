@@ -1,0 +1,491 @@
+{
+  "lecture_title": "L12: Hypothesis Testing or Comparing Two Samples",
+  "total_pages": 79,
+  "sections": [
+    {
+      "section_id": "birthday_problem_equations",
+      "title": "Birthday Problem Equations",
+      "pages": [
+        7
+      ],
+      "has_code": false,
+      "code_snippets": [],
+      "equations": [
+        {
+          "latex": "V_{nr} = \\frac{n!}{(n-k)!} = \\frac{365!}{(365-23)!}",
+          "description": "Number of ways to choose k birthdays from n days without replacement"
+        },
+        {
+          "latex": "V_t = n^k = 365^{23}",
+          "description": "Total number of possible birthday combinations"
+        },
+        {
+          "latex": "P(A) = \\frac{V_{nr}}{V_t} \\approx 0.492703",
+          "description": "Probability of no shared birthdays"
+        },
+        {
+          "latex": "P(B) = 1 - P(A) \\approx 1 - 0.492703 \\approx 0.507297 (50.7297\\%)",
+          "description": "Probability of at least one shared birthday"
+        }
+      ],
+      "concepts": [
+        "probability",
+        "birthday paradox",
+        "combinatorics"
+      ],
+      "dependencies": [],
+      "priority": 5
+    },
+    {
+      "section_id": "coin_toss_simulation",
+      "title": "Coin Toss Simulation",
+      "pages": [
+        27
+      ],
+      "has_code": true,
+      "code_snippets": [
+        {
+          "code": "M = 0\nfor i in range(10000):\n    trials = randint(2, size=30)\n    if (trials.sum() >= 22):\n        M += 1\np = M / 10000 # 0.008149",
+          "language": "python",
+          "line_number": null
+        }
+      ],
+      "equations": [
+        {
+          "latex": "P(N_H, N_T) = \\binom{N}{N_H} (\\frac{1}{2})^{N_H} (1 - \\frac{1}{2})^{N_T}",
+          "description": "Probability of N_H heads in N_T trials"
+        }
+      ],
+      "concepts": [
+        "coin toss",
+        "simulation",
+        "probability",
+        "binomial distribution"
+      ],
+      "dependencies": [],
+      "priority": 9
+    },
+    {
+      "section_id": "welchs_t_test_equation",
+      "title": "Welch's t-test Equation",
+      "pages": [
+        32
+      ],
+      "has_code": false,
+      "code_snippets": [],
+      "equations": [
+        {
+          "latex": "t = \\frac{\\bar{X}_1 - \\bar{X}_2}{\\sqrt{\\frac{s_1^2}{n_1} + \\frac{s_2^2}{n_2}}}",
+          "description": "Welch's t-test formula"
+        }
+      ],
+      "concepts": [
+        "Welch's t-test",
+        "hypothesis testing"
+      ],
+      "dependencies": [],
+      "priority": 3
+    },
+    {
+      "section_id": "welchs_t_test_example",
+      "title": "Welch's t-test Example Calculation",
+      "pages": [
+        33
+      ],
+      "has_code": false,
+      "code_snippets": [],
+      "equations": [
+        {
+          "latex": "t = \\frac{73.5 - 66.9}{\\sqrt{\\frac{316.3}{8} + \\frac{124.8}{12}}} = 0.932",
+          "description": "Welch's t-test calculation example"
+        }
+      ],
+      "concepts": [
+        "t-test calculation",
+        "statistical example"
+      ],
+      "dependencies": [
+        "welchs_t_test_equation"
+      ],
+      "priority": 3
+    },
+    {
+      "section_id": "students_t_distribution",
+      "title": "Student's t-distribution Equation",
+      "pages": [
+        34,
+        35,
+        36
+      ],
+      "has_code": false,
+      "code_snippets": [],
+      "equations": [
+        {
+          "latex": "p(t; \\nu) = \\frac{\\Gamma(\\frac{\\nu+1}{2})}{\\sqrt{\\nu\\pi} \\Gamma(\\frac{\\nu}{2})} (1 + \\frac{t^2}{\\nu})^{-\\frac{\\nu+1}{2}}",
+          "description": "Student's t-distribution formula"
+        }
+      ],
+      "concepts": [
+        "t-distribution",
+        "probability distribution"
+      ],
+      "dependencies": [],
+      "priority": 3
+    },
+    {
+      "section_id": "welch_satterthwaite_equation",
+      "title": "Welch-Satterthwaite Equation",
+      "pages": [
+        37,
+        38
+      ],
+      "has_code": false,
+      "code_snippets": [],
+      "equations": [
+        {
+          "latex": "\\nu \\approx \\frac{(\\frac{s_1^2}{N_1} + \\frac{s_2^2}{N_2})^2}{\\frac{s_1^4}{N_1^2(N_1-1)} + \\frac{s_2^4}{N_2^2(N_2-1)}}",
+          "description": "Welch-Satterthwaite equation for degrees of freedom"
+        },
+        {
+          "latex": "\\nu \\approx \\frac{(\\frac{316.3}{8} + \\frac{124.8}{12})^2}{\\frac{316.3^2}{8^2(8-1)} + \\frac{124.8^2}{12^2(12-1)}} = 10.7",
+          "description": "Welch-Satterthwaite calculation example"
+        }
+      ],
+      "concepts": [
+        "degrees of freedom",
+        "statistical calculation"
+      ],
+      "dependencies": [],
+      "priority": 3
+    },
+    {
+      "section_id": "t_table",
+      "title": "T-Table",
+      "pages": [
+        39,
+        40
+      ],
+      "has_code": false,
+      "code_snippets": [],
+      "equations": [],
+      "concepts": [
+        "t-table",
+        "critical values"
+      ],
+      "dependencies": [],
+      "priority": 2
+    },
+    {
+      "section_id": "t_test_critical_value",
+      "title": "T-test Critical Value Table",
+      "pages": [
+        41
+      ],
+      "has_code": false,
+      "code_snippets": [],
+      "equations": [],
+      "concepts": [
+        "t-test",
+        "critical value",
+        "alpha levels"
+      ],
+      "dependencies": [],
+      "priority": 2
+    },
+    {
+      "section_id": "t_test_classic_method",
+      "title": "T-test Classic Method",
+      "pages": [
+        42
+      ],
+      "has_code": false,
+      "code_snippets": [],
+      "equations": [
+        {
+          "latex": "t > t_{crit}",
+          "description": "T-statistic greater than critical t-value"
+        }
+      ],
+      "concepts": [
+        "t-test",
+        "hypothesis testing",
+        "critical region"
+      ],
+      "dependencies": [],
+      "priority": 2
+    },
+    {
+      "section_id": "t_test_example_result",
+      "title": "T-test Example Result",
+      "pages": [
+        43,
+        44
+      ],
+      "has_code": false,
+      "code_snippets": [],
+      "equations": [],
+      "concepts": [
+        "t-test",
+        "hypothesis testing",
+        "statistical significance"
+      ],
+      "dependencies": [
+        "t_test_classic_method"
+      ],
+      "priority": 2
+    },
+    {
+      "section_id": "statistical_significance_statement",
+      "title": "Statistical Significance Statement",
+      "pages": [
+        45
+      ],
+      "has_code": false,
+      "code_snippets": [],
+      "equations": [],
+      "concepts": [
+        "statistical significance",
+        "p-value",
+        "alpha level"
+      ],
+      "dependencies": [],
+      "priority": 2
+    },
+    {
+      "section_id": "shuffling_introduction",
+      "title": "Introduction to Shuffling",
+      "pages": [
+        47,
+        48,
+        49,
+        50
+      ],
+      "has_code": false,
+      "code_snippets": [],
+      "equations": [],
+      "concepts": [
+        "shuffling",
+        "permutation test",
+        "null distribution"
+      ],
+      "dependencies": [],
+      "priority": 4
+    },
+    {
+      "section_id": "permutation_test_example",
+      "title": "Permutation Test Example",
+      "pages": [
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60
+      ],
+      "has_code": false,
+      "code_snippets": [],
+      "equations": [],
+      "concepts": [
+        "permutation test",
+        "hypothesis testing",
+        "shuffling labels"
+      ],
+      "dependencies": [],
+      "priority": 6
+    },
+    {
+      "section_id": "permutation_test",
+      "title": "Keep Shuffling: Permutation Test",
+      "pages": [
+        72
+      ],
+      "has_code": false,
+      "code_snippets": [],
+      "equations": [],
+      "concepts": [
+        "permutation test",
+        "hypothesis testing"
+      ],
+      "dependencies": [],
+      "priority": 3
+    },
+    {
+      "section_id": "boiler_plate",
+      "title": "Boiler Plate",
+      "pages": [
+        73
+      ],
+      "has_code": true,
+      "code_snippets": [
+        {
+          "code": "import numpy as np\nimport pandas as pd\nfrom pandas import DataFrame, Series, read_csv\nfrom matplotlib import pyplot as plt\nimport matplotlib as mpl\n%matplotlib inline\nmpl.style.use('ggplot')\nmpl.rcParams['figure.figsize'] = (10, 6)",
+          "language": "python",
+          "line_number": null
+        }
+      ],
+      "equations": [],
+      "concepts": [
+        "import libraries",
+        "data analysis",
+        "visualization"
+      ],
+      "dependencies": [],
+      "priority": 6
+    },
+    {
+      "section_id": "birth_weight_and_smoking",
+      "title": "Birth Weight and Smoking",
+      "pages": [
+        74
+      ],
+      "has_code": true,
+      "code_snippets": [
+        {
+          "code": "data_url = \"https://bit.ly/smokebaby\"\nbirths = read_csv(data_url)\nbirths.head()",
+          "language": "python",
+          "line_number": null
+        }
+      ],
+      "equations": [],
+      "concepts": [
+        "data loading",
+        "pandas dataframe",
+        "data exploration"
+      ],
+      "dependencies": [
+        "boiler_plate"
+      ],
+      "priority": 8
+    },
+    {
+      "section_id": "get_info",
+      "title": "Always get info and ....",
+      "pages": [
+        75
+      ],
+      "has_code": true,
+      "code_snippets": [
+        {
+          "code": "births.info()",
+          "language": "python",
+          "line_number": null
+        }
+      ],
+      "equations": [],
+      "concepts": [
+        "data information",
+        "dataframe structure"
+      ],
+      "dependencies": [
+        "birth_weight_and_smoking"
+      ],
+      "priority": 7
+    },
+    {
+      "section_id": "summary_stats",
+      "title": "Describe for summary stats",
+      "pages": [
+        76
+      ],
+      "has_code": true,
+      "code_snippets": [
+        {
+          "code": "births.describe()",
+          "language": "python",
+          "line_number": null
+        }
+      ],
+      "equations": [],
+      "concepts": [
+        "summary statistics",
+        "data description"
+      ],
+      "dependencies": [
+        "birth_weight_and_smoking"
+      ],
+      "priority": 7
+    },
+    {
+      "section_id": "more_non_smokers",
+      "title": "More non-smokers",
+      "pages": [
+        77
+      ],
+      "has_code": true,
+      "code_snippets": [
+        {
+          "code": "smoking_and_birthweight = births[['Maternal Smoker', 'Birth Weight']]\nsmoking_and_birthweight.groupby('Maternal Smoker').count()",
+          "language": "python",
+          "line_number": null
+        }
+      ],
+      "equations": [],
+      "concepts": [
+        "data grouping",
+        "conditional counts"
+      ],
+      "dependencies": [
+        "birth_weight_and_smoking"
+      ],
+      "priority": 7
+    },
+    {
+      "section_id": "looking_at_the_differences",
+      "title": "Looking at the differences",
+      "pages": [
+        78
+      ],
+      "has_code": true,
+      "code_snippets": [
+        {
+          "code": "smoking_and_birthweight.groupby(\"Maternal Smoker\").hist()",
+          "language": "python",
+          "line_number": null
+        }
+      ],
+      "equations": [],
+      "concepts": [
+        "data visualization",
+        "histograms"
+      ],
+      "dependencies": [
+        "birth_weight_and_smoking"
+      ],
+      "priority": 8
+    },
+    {
+      "section_id": "make_it_look_nicer",
+      "title": "Lets make it look nicer",
+      "pages": [
+        79
+      ],
+      "has_code": true,
+      "code_snippets": [
+        {
+          "code": "fig, axs = plt.subplots(2,1)\nhist1 = smoking_and_birthweight.groupby(\"Maternal Smoker\").get_group(False).hist(ax=axs[0], color='blue')\nhist2 = smoking_and_birthweight.groupby(\"Maternal Smoker\").get_group(True).hist(ax=axs[1])\naxs[0].set_title(\"Maternal Smoker: False\")\naxs[1].set_title(\"Maternal Smoker: True\")\nfor ax in axs:\n    ax.set_xlim([50,180])\n    ax.set_ylim([0,220])\n    ax.set_xlabel(\"Birth Weight\")\n    ax.set_ylabel(\"Count\")",
+          "language": "python",
+          "line_number": null
+        }
+      ],
+      "equations": [],
+      "concepts": [
+        "data visualization",
+        "customization"
+      ],
+      "dependencies": [
+        "birth_weight_and_smoking",
+        "looking_at_the_differences"
+      ],
+      "priority": 9
+    }
+  ],
+  "metadata": {
+    "author": "Michael Grossberg",
+    "course": "Eng 10200",
+    "date": null
+  }
+}

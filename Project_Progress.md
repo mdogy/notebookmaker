@@ -4,126 +4,118 @@
 
 ## 📊 Project Status Overview
 
-### ✅ **COMPLETED - LLM Infrastructure (100%)**
+### ✅ **COMPLETED - Core Architecture (100%)**
 
-The LLM layer is **fully functional and production-ready**:
+The foundational architecture is complete and functional.
 
-1. **Configuration System** ✅
-   - YAML config file in `~/.notebookmaker_config.yaml`
-   - API key management for all 4 providers (Anthropic, Google, OpenAI, OpenRouter)
-   - LLM configuration (provider, model, max_tokens, temperature)
-   - Logging configuration support
-   - Priority: Config file → Environment variables
+1.  **LLM Infrastructure** ✅
+    -   Unified provider interface for Anthropic, Google, OpenAI, and OpenRouter.
+    -   Secure credential management (`~/.notebookmaker_config.yaml` + environment variables).
+    -   Full type safety with Pydantic models and strict mypy checking.
 
-2. **Provider Support** ✅
-   - Anthropic Claude (claude-3-5-sonnet, etc.)
-   - Google Gemini (gemini-2.5-flash, etc.)
-   - OpenAI (gpt-4o, gpt-4o-mini, etc.)
-   - OpenRouter (multi-model access)
-   - All providers tested and verified working
+2.  **Two-Phase Pipeline** ✅
+    -   **Phase 1: Analysis**: A vision-capable LLM analyzes the PDF in chunks, extracting sections, code (from text and images), equations, and concepts into a structured JSON file.
+    -   **Phase 2: Generation**: A second LLM uses the analysis JSON to generate code-focused instructor and student notebooks.
+    -   This architecture solves major limitations of the previous single-pass approach, including handling visual content and avoiding token limits.
 
-3. **Code Quality** ✅
-   - Full type hints and mypy compliance
-   - Pydantic models for runtime validation
-   - Comprehensive credential discovery
-   - Security best practices (key masking, validation)
+3.  **Pydantic Data Models** ✅
+    -   `LectureAnalysis`, `Section`, `CodeSnippet`, and `Equation` models provide a robust, validated structure for data passed between Phase 1 and Phase 2.
 
-### 🚧 **IN PROGRESS - Core Application Logic**
+4.  **Prompt Engineering** ✅
+    -   Modular prompt system with fragments for both analysis and generation phases.
+    -   Prompts are stored as external `.md` files for easy editing and experimentation.
 
-The main application features are **not yet implemented**:
+5.  **CLI Interface** ✅
+    -   Updated CLI (`cli.py`) supports the two-phase workflow.
+    -   Separate controls for analysis and generation providers/models (`--analysis-provider`, `--generation-model`, etc.).
+    -   Options to control generation logic, such as `--min-priority`.
 
-1. **Content Extraction** (High Priority) - ✅ **COMPLETED**
-   - `extract_pdf_content()` - Extract text from PDF lectures with page markers
-   - `extract_powerpoint_content()` - Extract text from PPTX slides with slide markers
-   - Dependencies added: `pypdf>=4.0.0`, `python-pptx>=0.6.23`
-   - Tested on example PDF (42 pages, 5903 characters extracted)
+### 🚧 **IN PROGRESS - Testing and Documentation**
 
-2. **Notebook Generation** (High Priority) - ✅ **COMPLETED**
-   - `generate_notebook()` - Create Jupyter notebooks from content using LLM
-   - Two outputs: Instructor version (complete code) + Student version (incomplete code with ....)
-   - Dependency added: `nbformat>=5.9.0`
-   - Full LLM integration with template-based prompts
+1.  **Testing** (Medium Priority) - Not Started
+    -   Unit tests for `analysis.py`, `generation.py`, and `vision.py`.
+    -   Integration tests for the full two-phase pipeline.
+    -   Target: 80%+ code coverage.
 
-3. **Prompt Engineering** (Medium Priority) - ✅ **COMPLETED**
-   - Fragment-based prompt system in `prompts/fragments/`:
-     * `role.md` - Instructor persona
-     * `notebook_structure.md` - Cell pattern guidelines
-     * `student_version.md` - Student notebook constraints
-     * `instructor_version.md` - Instructor notebook requirements
-     * `tone.md` - Conversational style guidelines
-     * `output_format.md` - JSON response format
-   - Template files that assemble fragments:
-     * `student_notebook_template.md`
-     * `instructor_notebook_template.md`
-   - Prompts dynamically loaded and assembled at runtime
-
-4. **Main Pipeline** (High Priority) - ✅ **COMPLETED**
-   - `process_lecture()` - Fully functional pipeline:
-     1. Extract content from PDF/PPTX ✅
-     2. Send to LLM with percent-formatted Python prompts ✅
-     3. Generate two Jupyter notebooks (instructor + student) ✅
-     4. Save with unique filenames (auto-increment if exists) ✅
-   - **Tested successfully** on 42-page PDF lecture
-   - Generated notebooks: 14 cells (instructor), 13 cells (student)
-
-5. **Testing** (Medium Priority) - Not Started
-   - Unit tests for extraction functions
-   - Unit tests for notebook generation
-   - Integration tests for full pipeline
-   - Target: 80%+ coverage (no need to obsess beyond this minimum)
-
-6. **Documentation Updates** (Low Priority) - Partially complete
-   - Update `AGENTS.md` (still references `.env` files - line 36)
-   - Add usage examples to README
-   - Document prompt templates
-
-### 📁 **Existing Assets**
-
-Available resources:
-- **Examples**: `examples/L12-HypothesisTesting.pdf` and notebooks
-- **Prompts**: Early versions in `prompts/` directory
-- **Config**: `prompts/config.json` with course/lecture metadata
-- **LLM Layer**: Complete and tested infrastructure
+2.  **Documentation Updates** (Low Priority) - Partially complete
+    -   Update `README.md` with new usage instructions for the two-phase CLI.
+    -   Document the `LectureAnalysis` JSON format.
+    -   Update `AGENTS.md` to reflect the new architecture.
 
 ### 🎯 **Recommended Next Steps**
 
-**Current Status**: Single-phase pipeline works but has limitations (see below).
+With the core two-phase architecture now implemented, the highest priority is to build a comprehensive test suite to ensure reliability and prevent regressions.
 
-**Next Major Feature**: Two-Phase Architecture (see `DESIGN_TWO_PHASE.md`)
-
-**Known Limitations of Current Implementation**:
-1. **Too much narrative**: Notebooks include non-code slides, becoming textbooks
-2. **Missing visual content**: Text extraction misses equations, code screenshots in images
-3. **Token limits**: Large PDFs may exceed input/output limits
-
-**Two-Phase Solution** (Planned):
-1. **Phase 1 - Analysis**: Use multimodal LLM to extract code/equations from images
-2. **Phase 2 - Generation**: Generate notebooks only for code-heavy sections
-
-**Implementation Tasks**:
-1. **Add image extraction** - pdf2image + Pillow dependencies
-2. **Implement PDF extraction** - Foundation for the pipeline
-3. **Design the prompt templates** using existing examples as reference
-4. **Implement LLM-powered notebook generation** (LLM layer ready!)
-5. **Wire components together** in the main pipeline
-6. **Add comprehensive tests** to reach 90%+ coverage
-7. **Update documentation** (AGENTS.md, usage examples)
+1.  **Write Unit Tests**: Create `pytest` tests for the key functions in `analysis.py`, `generation.py`, and `vision.py`.
+2.  **Write Integration Tests**: Build a test that runs the full `process_lecture` pipeline on an example PDF and verifies the outputs (analysis JSON and notebooks).
+3.  **Update Documentation**: Ensure the `README.md` and other documentation files are updated to reflect the new CLI commands and workflow.
 
 ---
 
 ## 📈 Development Metrics
 
-- **Lines of Code**: ~1,500 (src/)
-- **Test Coverage**: Not yet measured
-- **Type Coverage**: 100% (mypy strict mode)
-- **Linting**: 100% (ruff passing)
-- **Dependencies**: 8 core, 5 dev
+-   **Lines of Code**: ~2,000 (src/)
+-   **Test Coverage**: Not yet measured
+-   **Type Coverage**: 100% (mypy strict mode)
+-   **Linting**: 100% (ruff passing)
+-   **Dependencies**: 10 core, 5 dev
 
 ---
 
 ## Appendix: Project History
 
-### Evolution from `01e96de` → `[current]` (2025-11-14)
+### Evolution from `[previous]` → `[current]` (2025-11-14)
+
+**From**: Single-phase, text-only pipeline
+**To**: Two-phase, vision-enabled analysis-generation architecture
+
+**What Changed Between Commits**:
+
+This commit fundamentally refactors the application from a simple text-extraction pipeline to a sophisticated two-phase architecture. This addresses the critical limitations of the previous approach, which could not handle visual content (like code in images) and was prone to hitting LLM token limits.
+
+**Key Changes**:
+
+1.  **Architecture Split**:
+    -   **Phase 1: Analysis**: A new `analysis.py` module uses a vision-capable LLM (via `vision.py`) to analyze the source PDF. It processes the document in chunks, identifies logical sections, and extracts code, equations, and concepts into a structured `LectureAnalysis` JSON file.
+    -   **Phase 2: Generation**: A new `generation.py` module takes the `LectureAnalysis` JSON as input and uses an LLM to generate code-focused notebooks, respecting dependencies and priorities defined in the analysis.
+
+2.  **New Modules**:
+    -   `src/notebookmaker/analysis.py`: Orchestrates the Phase 1 analysis.
+    -   `src/notebookmaker/vision.py`: Handles multimodal LLM calls for analyzing PDF pages.
+    -   `src/notebookmaker/generation.py`: Manages the Phase 2 notebook generation.
+
+3.  **Pydantic Models (`models.py`)**:
+    -   Introduced `LectureAnalysis`, `Section`, `CodeSnippet`, and `Equation` to formally define the data structure passed between the two phases. This ensures type safety and runtime validation.
+
+4.  **Pipeline Rewrite (`utils.py`)**:
+    -   `process_lecture` was completely rewritten to be a high-level orchestrator of the two-phase workflow. It now calls `analyze_pdf` followed by `generate_notebook_from_analysis`.
+    -   The old text-extraction and single-pass generation logic has been removed.
+
+5.  **CLI Overhaul (`cli.py`)**:
+    -   The command-line interface was redesigned to support the new architecture.
+    -   Users can now specify different providers and models for the analysis and generation phases (e.g., `--analysis-provider`, `--generation-model`).
+    -   New options like `--min-priority` and `--chunk-size` provide finer control over the process.
+
+6.  **New Prompt Fragments**:
+    -   **Analysis**: `analysis_instructions.md`, `analysis_output_format.md`.
+    -   **Generation**: `generation_instructions.md`, `instructor.md`, `student.md`.
+
+**Why This Evolution Matters**:
+
+This is the most significant architectural change in the project's history. It elevates NotebookMaker from a simple script to a robust content processing system.
+
+-   **Handles Visuals**: Can now extract code from screenshots and properly formatted equations.
+-   **Scalability**: By processing PDFs in chunks, it can handle documents of any length without hitting token limits.
+-   **Higher Quality Output**: Notebooks are generated from a pre-analyzed, structured summary, leading to more relevant, code-focused content and less verbose narrative.
+-   **Modularity & Reusability**: The analysis phase produces a reusable `analysis.json` file, which can be used to generate different kinds of notebooks or other materials without re-analyzing the source PDF.
+
+**Migration Impact**:
+
+-   The CLI is not backward-compatible. Users must adapt to the new flags (`--analysis-provider`, etc.).
+-   The workflow now produces an intermediate `.analysis.json` file, which is cached for subsequent runs.
+
+---
+### Evolution from `01e96de` → `[previous]` (2025-11-14)
 
 **From**: Percent-format prompts with JSON parsing issues
 **To**: Working end-to-end pipeline generating Jupyter notebooks
@@ -192,14 +184,6 @@ For users: The pipeline now works! Generated notebooks are production-ready.
 
 For developers: The percent-format parser in `_parse_llm_response_to_notebook()` is simpler and more maintainable than JSON parsing. Future prompt improvements won't fight JSON escaping issues.
 
-**Next Steps**:
-
-The core pipeline is complete. Remaining work:
-- Unit tests for extraction functions (PDF, PowerPoint)
-- Unit tests for notebook generation
-- Integration tests for full pipeline
-- Documentation updates (usage examples, README)
-
 ---
 
 ### Evolution from `01e96de` (previous) → `01e96de` (2025-11-14)
@@ -250,31 +234,6 @@ This refactoring addresses a critical design flaw identified by the user: prompt
 - **Separation of Concerns**: LLM instructions (prompts) are separate from orchestration logic (code)
 - **Version Control**: Prompt changes are tracked independently of code changes
 
-**Key Design Decisions**:
-
-- **Fragment System**: Breaking prompts into reusable pieces (role, tone, structure, etc.) allows flexibility. Student and instructor notebooks share most fragments but differ in version-specific guidelines.
-
-- **Template Assembly**: Using simple string replacement (`{placeholder}`) keeps the system understandable and debuggable. More sophisticated templating (Jinja2, etc.) wasn't needed.
-
-- **Header Removal**: Fragments have markdown headers (e.g., `# Role`) for readability when editing, but these are stripped when loading to avoid duplication in the assembled prompt.
-
-- **Runtime Loading**: Fragments are loaded from disk each time `generate_notebook()` is called. This allows prompt tuning without restarting the application (useful during development).
-
-**Migration Impact**:
-
-For users: None - this is an internal refactoring with no API changes.
-
-For developers: Prompt engineering now happens in `prompts/fragments/*.md` files instead of editing Python code. To modify prompts:
-1. Edit the relevant fragment file
-2. Test the change (no code restart needed)
-3. Commit the prompt change separately from code changes
-
-**Testing Notes**:
-
-- Mypy: All type errors resolved (mypy success: 7 source files)
-- Ruff: All linting errors fixed in utils.py
-- The prompt loading system has not yet been tested end-to-end with actual LLM calls (that requires implementing `process_lecture()`)
-
 ---
 
 ### Evolution from `b52f945` → `[previous]` (2025-11-14)
@@ -312,28 +271,6 @@ The previous commit (`b52f945`) finalized the development guidelines and documen
 
 This commit transforms NotebookMaker from "infrastructure only" to "can process lecture materials." The extraction functions are the **foundation of the entire pipeline** - without them, we can't get content to send to the LLM.
 
-Key design decisions:
-
-- **Page/Slide Markers**: Adding `--- Page N ---` and `--- Slide N ---` markers makes it easy for the LLM to understand document structure and reference specific pages/slides in generated content.
-
-- **Error Handling**: Both functions validate inputs (file exists, correct format) and provide clear error messages. This follows the "fail fast" principle from the coding guidelines.
-
-- **Type Safety**: Using Path objects and proper type hints catches errors at development time. The pypdf library accepts Path directly, but python-pptx requires str conversion - this is handled correctly.
-
-- **Empty Content Handling**: Both functions skip empty pages/slides and return empty strings if no content is found, preventing downstream issues.
-
-**Testing Notes**:
-
-The PDF extraction was manually tested on `examples/L12-HypothesisTesting.pdf`:
-- Successfully extracted text from all 42 pages
-- Total: 5,903 characters
-- First page correctly shows title and instructor information
-- Page markers properly formatted
-
-**Next Steps**:
-
-With content extraction working, the next priority is to design prompt templates and implement notebook generation using the LLM infrastructure.
-
 ---
 
 ### Evolution from `d39d7bc` → `601f883` (2025-11-14)
@@ -344,43 +281,6 @@ With content extraction working, the next priority is to design prompt templates
 **What Changed Between Commits**:
 
 The previous commit (`d39d7bc`) had implemented a working LLM layer, but it relied on `.env` files in the project directory for API key storage. This commit completely replaced that approach with a more secure and user-friendly YAML configuration system.
-
-**Key Differences**:
-
-1. **Configuration Location**:
-   - **Before**: `.env` file in project directory (could be accidentally committed)
-   - **After**: `~/.notebookmaker_config.yaml` in user's home directory (always separate from code)
-
-2. **Configuration Scope**:
-   - **Before**: Only API keys stored in `.env`
-   - **After**: API keys + LLM settings (provider, model, temperature) + logging config in YAML
-
-3. **Priority System**:
-   - **Before**: Environment variables → `.env` file
-   - **After**: YAML config file (highest) → Environment variables → App-specific env vars
-
-4. **Dependencies**:
-   - **Before**: Used `python-dotenv` for `.env` parsing
-   - **After**: Uses `pyyaml` for YAML parsing (with type stubs for mypy)
-
-5. **Code Changes**:
-   - **Removed**: `_load_from_env_file()` method that parsed `.env` files
-   - **Added**: `_load_config()` method with caching for YAML files
-   - **Added**: `get_llm_config()` and `get_logging_config()` methods
-   - **Updated**: All four `get_*_key()` methods to check YAML first
-
-6. **Testing Improvements**:
-   - **Before**: OpenRouter not tested by default in `test_llm_providers.py`
-   - **After**: All 4 providers (including OpenRouter) tested by default
-
-**Why This Evolution Matters**:
-
-This represents a shift from a developer-centric configuration approach (`.env` files are common in development) to a user-centric approach (configuration in home directory). The changes recognize that NotebookMaker is an end-user application, not just a library, and users need a central place to store their preferences that isn't tied to any particular project directory.
-
-The addition of `llm` and `logging` configuration sections also makes the system more flexible, allowing users to set default LLM providers and models rather than having to specify them in code or on the command line every time.
-
-**Migration Impact**:
-Users with existing `.env` files will need to migrate to `~/.notebookmaker_config.yaml`. The system gracefully falls back to environment variables, so existing environment-based setups continue to work.
 
 ---
 
@@ -393,50 +293,6 @@ Users with existing `.env` files will need to migrate to `~/.notebookmaker_confi
 
 The initial commit (`5076402`) set up the project structure, development guidelines, and tooling configuration, but contained no actual application code. This commit added the entire LLM integration layer.
 
-**Key Additions**:
-
-1. **Project Structure Created**:
-   - `src/notebookmaker/` package with `__init__.py`
-   - `src/notebookmaker/cli.py` - Click-based CLI
-   - `src/notebookmaker/utils.py` - Core processing functions (stubs)
-   - `src/notebookmaker/llm/` - Complete LLM integration module
-
-2. **LLM Module Components** (`src/notebookmaker/llm/`):
-   - `models.py` - Pydantic models for type-safe data validation:
-     - `LLMMessage`, `LLMResponse`, `LLMUsage`, `LLMConfig`, `ProviderConfig`
-   - `credentials.py` - Secure credential discovery:
-     - `CredentialManager` class with methods for each provider
-     - Support for environment variables and `.env` files
-     - Key validation and masking for security
-   - `providers.py` - Four LLM provider implementations:
-     - `AnthropicProvider` (Claude models)
-     - `GoogleProvider` (Gemini models, with ADC support)
-     - `OpenAIProvider` (GPT models)
-     - `OpenRouterProvider` (multi-model gateway)
-   - `__init__.py` - Clean API with `get_provider()` factory function
-
-3. **Testing Infrastructure**:
-   - `test_llm_providers.py` - Integration test script
-   - Tests for Anthropic, Google, and OpenAI (OpenRouter not yet included)
-   - Token counting validation
-
-4. **CLI Implementation**:
-   - `notebookmaker` command-line tool
-   - Accepts PDF/PowerPoint input
-   - Output directory configuration
-   - Delegates to `process_lecture()` in utils
-
-**Why This Evolution Matters**:
-
-This commit transformed the project from "configured but empty" to "functionally complete LLM infrastructure." The architecture introduced here established several important patterns:
-
-- **Provider Abstraction**: A common interface (`LLMProvider`) for all LLM providers allows easy switching between models without code changes.
-- **Type Safety**: Pydantic models ensure runtime validation of all API inputs/outputs, catching errors early.
-- **Security First**: Credential discovery happens in a layered, secure way with proper key masking in logs.
-- **Testability**: The integration test script allows verification of API connectivity before running the full application.
-
-The modular design (models, credentials, providers) makes it easy to add new LLM providers in the future or modify existing ones without affecting other parts of the system.
-
 ---
 
 ### Commit: `5076402` - Initial commit: project configuration (2025-11-14)
@@ -444,37 +300,3 @@ The modular design (models, credentials, providers) makes it easy to add new LLM
 **What Was Created**:
 
 The foundation for a high-quality Python project with strict development standards.
-
-**Project Configuration Files**:
-- `pyproject.toml` - Package metadata, dependencies, and tool configuration
-  - Python 3.11+ requirement
-  - mypy strict mode configuration
-  - ruff linting rules (PEP 8, imports, simplifications)
-  - pytest and coverage settings
-- `.gitignore` - Prevent committing sensitive/generated files
-- `CLAUDE.md` - Development guidelines for code quality and testing
-
-**Development Standards Established**:
-- **Type Safety**: mypy strict mode requires type hints on all functions
-- **Code Quality**: ruff checks PEP 8, naming, imports, and code smells
-- **Testing**: pytest with 90%+ coverage target
-- **Documentation**: Docstring requirements for public APIs
-
-**Why This Matters**:
-
-Setting up strict quality standards from the beginning prevents technical debt. Rather than adding linting/typing/testing later (which is painful), the project started with these requirements. This "quality first" approach means:
-- Bugs are caught earlier (by type checker and linters)
-- Code is consistently formatted and readable
-- Tests are written alongside features, not as an afterthought
-- New contributors have clear guidelines to follow
-
-This commit essentially said: "This project will be high-quality, maintainable code, and we're enforcing it from day one."
-
----
-
-## Notes
-
-- All commits follow conventional commit message format
-- Quality gates enforced: ruff, mypy, pytest, coverage
-- Security: No credentials in version control, proper .gitignore
-- Next major milestone: Implement content extraction and notebook generation
