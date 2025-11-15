@@ -87,7 +87,21 @@ Available resources:
 
 ### 🎯 **Recommended Next Steps**
 
-1. **Add required dependencies** to `pyproject.toml` (pypdf, python-pptx, nbformat)
+**Current Status**: Single-phase pipeline works but has limitations (see below).
+
+**Next Major Feature**: Two-Phase Architecture (see `DESIGN_TWO_PHASE.md`)
+
+**Known Limitations of Current Implementation**:
+1. **Too much narrative**: Notebooks include non-code slides, becoming textbooks
+2. **Missing visual content**: Text extraction misses equations, code screenshots in images
+3. **Token limits**: Large PDFs may exceed input/output limits
+
+**Two-Phase Solution** (Planned):
+1. **Phase 1 - Analysis**: Use multimodal LLM to extract code/equations from images
+2. **Phase 2 - Generation**: Generate notebooks only for code-heavy sections
+
+**Implementation Tasks**:
+1. **Add image extraction** - pdf2image + Pillow dependencies
 2. **Implement PDF extraction** - Foundation for the pipeline
 3. **Design the prompt templates** using existing examples as reference
 4. **Implement LLM-powered notebook generation** (LLM layer ready!)
