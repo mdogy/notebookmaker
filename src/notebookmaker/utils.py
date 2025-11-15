@@ -9,19 +9,33 @@ if TYPE_CHECKING:
     import nbformat
 
 
-def process_lecture(input_file: Path, output_dir: Path) -> dict[str, Path]:
+def process_lecture(
+    input_file: Path,
+    output_dir: Path,
+    provider: str = "anthropic",
+    model: str | None = None,
+) -> dict[str, Path]:
     """Process a lecture file and generate two Jupyter notebooks.
 
     Args:
         input_file: Path to the PDF or PowerPoint file
         output_dir: Directory where notebooks will be saved
+        provider: LLM provider to use (default: "anthropic")
+        model: Optional model name (uses provider default if None)
 
     Returns:
-        Dictionary with paths to the generated notebooks
+        Dictionary with paths to the generated notebooks:
+            - "instructor": Path to instructor notebook
+            - "student": Path to student notebook
 
     Raises:
         ValueError: If the input file format is not supported
+        FileNotFoundError: If the input file doesn't exist
     """
+    # Validate file exists
+    if not input_file.exists():
+        raise FileNotFoundError(f"Input file not found: {input_file}")
+
     # Validate file extension
     supported_extensions = {".pdf", ".ppt", ".pptx"}
     if input_file.suffix.lower() not in supported_extensions:
@@ -30,21 +44,58 @@ def process_lecture(input_file: Path, output_dir: Path) -> dict[str, Path]:
             f"Supported formats: {', '.join(supported_extensions)}"
         )
 
-    # TODO: Implement lecture processing logic
-    # This is a placeholder implementation
-    base_name = input_file.stem
-    notebook1_path = output_dir / f"{base_name}_part1.ipynb"
-    notebook2_path = output_dir / f"{base_name}_part2.ipynb"
+    # Step 1: Extract content from PDF/PowerPoint
+    if input_file.suffix.lower() == ".pdf":
+        content = extract_pdf_content(input_file)
+    else:  # .ppt or .pptx
+        content = extract_powerpoint_content(input_file)
 
-    # Placeholder: Create empty notebooks
-    # In the actual implementation, this would:
-    # 1. Extract content from PDF/PowerPoint
-    # 2. Process the content using prompts
-    # 3. Generate two Jupyter notebooks
+    # Ensure output directory exists
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    # Generate base filename, checking for existing files
+    base_name = input_file.stem
+
+    # Helper function to generate unique filename
+    def get_unique_path(base: str, suffix: str) -> Path:
+        """Generate unique filename by adding numbers if file exists."""
+        path = output_dir / f"{base}_{suffix}.ipynb"
+        if not path.exists():
+            return path
+
+        # File exists, find next available number
+        counter = 1
+        while True:
+            path = output_dir / f"{base}_{suffix}{counter}.ipynb"
+            if not path.exists():
+                return path
+            counter += 1
+
+    # Generate unique paths for both notebooks
+    instructor_path = get_unique_path(base_name, "instructor")
+    student_path = get_unique_path(base_name, "student")
+
+    # Step 2: Generate instructor notebook
+    generate_notebook(
+        content=content,
+        output_path=instructor_path,
+        notebook_type="instructor",
+        provider=provider,
+        model=model,
+    )
+
+    # Step 3: Generate student notebook
+    generate_notebook(
+        content=content,
+        output_path=student_path,
+        notebook_type="student",
+        provider=provider,
+        model=model,
+    )
 
     return {
-        "notebook1": notebook1_path,
-        "notebook2": notebook2_path,
+        "instructor": instructor_path,
+        "student": student_path,
     }
 
 
@@ -299,41 +350,80 @@ def _create_notebook_prompt(content: str, notebook_type: str) -> str:
 def _parse_llm_response_to_notebook(
     llm_response: str, notebook_type: str
 ) -> nbformat.NotebookNode:
-    """Parse LLM JSON response into a Jupyter notebook.
+    """Parse LLM percent-formatted Python response into a Jupyter notebook.
 
     Args:
-        llm_response: JSON response from LLM
+        llm_response: Percent-formatted Python from LLM (with # %% markers)
         notebook_type: Type of notebook
 
     Returns:
         NotebookNode object
     """
-    import json
+    import re
 
     from nbformat.v4 import new_code_cell, new_markdown_cell, new_notebook
 
-    # Parse JSON response
-    try:
-        cells_data = json.loads(llm_response)
-    except json.JSONDecodeError:
-        # If LLM didn't return valid JSON, create a simple error notebook
-        cells_data = [
-            {
-                "type": "markdown",
-                "content": "# Error\n\nFailed to generate notebook content.",
-            }
-        ]
+    # Extract Python code if wrapped in markdown code block
+    content = llm_response.strip()
+    code_block_match = re.search(r"```(?:python)?\s*\n(.*?)\n```", content, re.DOTALL)
+    if code_block_match:
+        content = code_block_match.group(1).strip()
 
-    # Create cells
-    cells = []
-    for cell_data in cells_data:
-        cell_type = cell_data.get("type", "markdown")
-        content = cell_data.get("content", "")
+    # Split by cell markers
+    lines = content.split("\n")
+    cells: list[nbformat.NotebookNode] = []
+    current_cell_type: str | None = None
+    current_cell_lines: list[str] = []
 
-        if cell_type == "markdown":
-            cells.append(new_markdown_cell(content))  # type: ignore[no-untyped-call]
-        elif cell_type == "code":
-            cells.append(new_code_cell(content))  # type: ignore[no-untyped-call]
+    def save_current_cell() -> None:
+        """Save accumulated lines as a cell."""
+        if current_cell_type is None or not current_cell_lines:
+            return
+
+        if current_cell_type == "markdown":
+            # Remove '# ' prefix from each line
+            markdown_lines = []
+            for line in current_cell_lines:
+                if line.startswith("# "):
+                    markdown_lines.append(line[2:])
+                elif line.startswith("#"):
+                    # Just '#' with nothing after it
+                    markdown_lines.append("")
+                else:
+                    # Line without '# ' prefix (shouldn't happen but handle it)
+                    markdown_lines.append(line)
+            cell_content = "\n".join(markdown_lines)
+            cells.append(new_markdown_cell(cell_content))  # type: ignore[no-untyped-call]
+        else:  # code
+            cell_content = "\n".join(current_cell_lines)
+            cells.append(new_code_cell(cell_content))  # type: ignore[no-untyped-call]
+
+    for line in lines:
+        # Check for cell markers
+        if line.strip() == "# %% [markdown]":
+            save_current_cell()
+            current_cell_type = "markdown"
+            current_cell_lines = []
+        elif line.strip() == "# %%":
+            save_current_cell()
+            current_cell_type = "code"
+            current_cell_lines = []
+        else:
+            # Add line to current cell
+            if current_cell_type is not None:
+                current_cell_lines.append(line)
+
+    # Save the last cell
+    save_current_cell()
+
+    # If no cells were created, create an error cell
+    if not cells:
+        error_msg = (
+            "# Error\n\n"
+            "Failed to parse notebook content.\n\n"
+            "Expected percent-formatted Python with `# %%` markers."
+        )
+        cells.append(new_markdown_cell(error_msg))  # type: ignore[no-untyped-call]
 
     # Create notebook
     nb = new_notebook(cells=cells)  # type: ignore[no-untyped-call]

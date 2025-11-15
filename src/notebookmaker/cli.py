@@ -19,24 +19,42 @@ from notebookmaker.utils import process_lecture
     default="outputs",
     help="Directory to save generated notebooks (default: outputs/)",
 )
-def main(input_file: Path, output_dir: Path) -> None:
+@click.option(
+    "--provider",
+    "-p",
+    type=click.Choice(["anthropic", "google", "openai", "openrouter"]),
+    default="anthropic",
+    help="LLM provider to use (default: anthropic)",
+)
+@click.option(
+    "--model",
+    "-m",
+    type=str,
+    default=None,
+    help="Model name (uses provider default if not specified)",
+)
+def main(
+    input_file: Path, output_dir: Path, provider: str, model: str | None
+) -> None:
     """Convert a lecture PDF or PowerPoint to Jupyter notebooks.
 
     Args:
         input_file: Path to the PDF or PowerPoint file
         output_dir: Directory where notebooks will be saved
+        provider: LLM provider to use
+        model: Optional model name
     """
     click.echo(f"Processing: {input_file}")
-
-    # Ensure output directory exists
-    output_dir.mkdir(parents=True, exist_ok=True)
+    click.echo(f"Provider: {provider}")
+    if model:
+        click.echo(f"Model: {model}")
 
     # Process the lecture file
-    result = process_lecture(input_file, output_dir)
+    result = process_lecture(input_file, output_dir, provider=provider, model=model)
 
-    click.echo(f"Generated notebooks saved to: {output_dir}")
-    click.echo(f"  - {result['notebook1']}")
-    click.echo(f"  - {result['notebook2']}")
+    click.echo(f"\nGenerated notebooks saved to: {output_dir}")
+    click.echo(f"  - Instructor: {result['instructor']}")
+    click.echo(f"  - Student: {result['student']}")
 
 
 if __name__ == "__main__":
