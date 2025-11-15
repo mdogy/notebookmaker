@@ -33,5 +33,6 @@
 - Ensure `.env` stays untracked, scrub API keys from notebooks/logs, and rotate shared keys if any provider command reports unauthorized access.
 
 ## API & Security Notes
-- Configure Anthropic, Gemini, OpenAI, or OpenRouter keys through environment variables or `.env` (see `.env.example`), and prefer sandbox-scoped tokens.
+- Configure Anthropic, Gemini, OpenAI, or OpenRouter keys through `~/.notebookmaker_config.yaml` (see `.notebookmaker_config.yaml.example`) or environment variables, and prefer sandbox-scoped tokens.
+- The YAML config file takes priority over environment variables and should be protected with `chmod 600 ~/.notebookmaker_config.yaml`.
 - Enforce runtime validation with Pydantic models for any external payload; fail fast rather than allowing unchecked dictionaries through the pipeline.
