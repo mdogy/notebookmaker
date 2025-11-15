@@ -49,10 +49,36 @@ def extract_pdf_content(pdf_path: Path) -> str:
         pdf_path: Path to the PDF file
 
     Returns:
-        Extracted text content
+        Extracted text content from all pages, separated by page breaks
+
+    Raises:
+        FileNotFoundError: If the PDF file doesn't exist
+        ValueError: If the file is not a valid PDF
     """
-    # TODO: Implement PDF extraction
-    raise NotImplementedError("PDF extraction not yet implemented")
+    if not pdf_path.exists():
+        raise FileNotFoundError(f"PDF file not found: {pdf_path}")
+
+    if not pdf_path.suffix.lower() == ".pdf":
+        raise ValueError(f"File must be a PDF, got: {pdf_path.suffix}")
+
+    try:
+        from pypdf import PdfReader
+
+        reader = PdfReader(pdf_path)
+        pages_text = []
+
+        for page_num, page in enumerate(reader.pages, start=1):
+            text = page.extract_text()
+            if text.strip():  # Only include non-empty pages
+                pages_text.append(f"--- Page {page_num} ---\n{text}")
+
+        if not pages_text:
+            return ""
+
+        return "\n\n".join(pages_text)
+
+    except Exception as e:
+        raise ValueError(f"Error reading PDF file {pdf_path}: {e}") from e
 
 
 def extract_powerpoint_content(pptx_path: Path) -> str:
@@ -62,10 +88,47 @@ def extract_powerpoint_content(pptx_path: Path) -> str:
         pptx_path: Path to the PowerPoint file
 
     Returns:
-        Extracted content
+        Extracted text content from all slides, separated by slide breaks
+
+    Raises:
+        FileNotFoundError: If the PowerPoint file doesn't exist
+        ValueError: If the file is not a valid PowerPoint
     """
-    # TODO: Implement PowerPoint extraction
-    raise NotImplementedError("PowerPoint extraction not yet implemented")
+    if not pptx_path.exists():
+        raise FileNotFoundError(f"PowerPoint file not found: {pptx_path}")
+
+    if pptx_path.suffix.lower() not in {".ppt", ".pptx"}:
+        raise ValueError(
+            f"File must be a PowerPoint file (.ppt or .pptx), got: {pptx_path.suffix}"
+        )
+
+    try:
+        from pptx import Presentation
+
+        prs = Presentation(str(pptx_path))
+        slides_text = []
+
+        for slide_num, slide in enumerate(prs.slides, start=1):
+            slide_text = []
+            slide_text.append(f"--- Slide {slide_num} ---")
+
+            # Extract text from all shapes
+            for shape in slide.shapes:
+                if hasattr(shape, "text") and shape.text.strip():
+                    slide_text.append(shape.text.strip())
+
+            if len(slide_text) > 1:  # More than just the header
+                slides_text.append("\n".join(slide_text))
+
+        if not slides_text:
+            return ""
+
+        return "\n\n".join(slides_text)
+
+    except Exception as e:
+        raise ValueError(
+            f"Error reading PowerPoint file {pptx_path}: {e}"
+        ) from e
 
 
 def generate_notebook(content: str, output_path: Path, prompt_template: str) -> None:
