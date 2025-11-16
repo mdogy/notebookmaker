@@ -32,9 +32,9 @@ The foundational architecture is complete and functional.
 
 ### 🚧 **IN PROGRESS - Testing and Documentation**
 
-1.  **Testing** (Medium Priority) - In Progress (~20%)
-    -   Added first pytest modules covering Google analysis chunking, cached `process_lecture` flows, and notebook failure handling.
-    -   Next: expand coverage to `vision.py`, CLI integration, and non-Google providers to push toward the 80% goal.
+1.  **Testing** (Medium Priority) - In Progress (~40%)
+    -   Added pytest modules for Google, Anthropic, and OpenAI analysis chunk handling, notebook failure detection, and `vision.py` helpers.
+    -   Next: exercise CLI end-to-end via CliRunner/cram and extend coverage to Anthropic/OpenAI generation paths to keep moving toward ≥80%.
 
 2.  **Documentation Updates** (Low Priority) - In Progress (~10%)
     -   README now explicitly documents that ADC is not required and reminds contributors to run pytest inside the venv.
